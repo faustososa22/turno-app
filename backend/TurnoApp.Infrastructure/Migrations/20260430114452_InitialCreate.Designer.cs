@@ -12,7 +12,7 @@ using TurnoApp.Infrastructure.Persistence;
 namespace TurnoApp.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260430102221_InitialCreate")]
+    [Migration("20260430114452_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -25,6 +25,43 @@ namespace TurnoApp.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("TurnoApp.Domain.Entities.Barbero", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Apellido")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FotoUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId")
+                        .IsUnique();
+
+                    b.ToTable("Barberos");
+                });
+
             modelBuilder.Entity("TurnoApp.Domain.Entities.HorarioDisponible", b =>
                 {
                     b.Property<int>("Id")
@@ -36,6 +73,9 @@ namespace TurnoApp.Infrastructure.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("BarberoId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("DiaSemana")
                         .HasColumnType("integer");
 
@@ -46,6 +86,8 @@ namespace TurnoApp.Infrastructure.Migrations
                         .HasColumnType("time without time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BarberoId");
 
                     b.ToTable("HorariosDisponibles");
                 });
@@ -88,6 +130,9 @@ namespace TurnoApp.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("BarberoId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreadoEn")
                         .HasColumnType("timestamp with time zone");
 
@@ -96,6 +141,9 @@ namespace TurnoApp.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("FechaHora")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaHoraFin")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Notas")
@@ -108,6 +156,8 @@ namespace TurnoApp.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BarberoId");
 
                     b.HasIndex("ServicioId");
 
@@ -123,6 +173,13 @@ namespace TurnoApp.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Apellido")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreadoEn")
                         .HasColumnType("timestamp with time zone");
@@ -145,26 +202,66 @@ namespace TurnoApp.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.ToTable("Usuarios");
+                });
+
+            modelBuilder.Entity("TurnoApp.Domain.Entities.Barbero", b =>
+                {
+                    b.HasOne("TurnoApp.Domain.Entities.Usuario", "Usuario")
+                        .WithOne()
+                        .HasForeignKey("TurnoApp.Domain.Entities.Barbero", "UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("TurnoApp.Domain.Entities.HorarioDisponible", b =>
+                {
+                    b.HasOne("TurnoApp.Domain.Entities.Barbero", "Barbero")
+                        .WithMany("Horarios")
+                        .HasForeignKey("BarberoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Barbero");
                 });
 
             modelBuilder.Entity("TurnoApp.Domain.Entities.Turno", b =>
                 {
+                    b.HasOne("TurnoApp.Domain.Entities.Barbero", "Barbero")
+                        .WithMany("Turnos")
+                        .HasForeignKey("BarberoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("TurnoApp.Domain.Entities.Servicio", "Servicio")
                         .WithMany()
                         .HasForeignKey("ServicioId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("TurnoApp.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Barbero");
 
                     b.Navigation("Servicio");
 
                     b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("TurnoApp.Domain.Entities.Barbero", b =>
+                {
+                    b.Navigation("Horarios");
+
+                    b.Navigation("Turnos");
                 });
 #pragma warning restore 612, 618
         }

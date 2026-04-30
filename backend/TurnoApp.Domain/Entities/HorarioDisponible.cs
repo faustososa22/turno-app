@@ -7,4 +7,7 @@ public class HorarioDisponible
     public TimeOnly HoraInicio { get; set; }
     public TimeOnly HoraFin { get; set; }
     public bool Activo { get; set; } = true;
+
+    public int BarberoId { get; set; }
+    public Barbero Barbero { get; set; } = null!;
 }
