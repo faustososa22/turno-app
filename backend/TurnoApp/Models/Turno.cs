@@ -1,4 +1,4 @@
-namespace TurnoApp.Domain.Entities;
+namespace TurnoApp.Models;
 
 public class Turno
 {

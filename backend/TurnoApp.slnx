@@ -1,6 +1,3 @@
 <Solution>
-  <Project Path="TurnoApp.API/TurnoApp.API.csproj" />
-  <Project Path="TurnoApp.Application/TurnoApp.Application.csproj" />
-  <Project Path="TurnoApp.Domain/TurnoApp.Domain.csproj" />
-  <Project Path="TurnoApp.Infrastructure/TurnoApp.Infrastructure.csproj" />
+  <Project Path="TurnoApp/TurnoApp.csproj" />
 </Solution>

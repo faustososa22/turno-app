@@ -2,21 +2,18 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using TurnoApp.Infrastructure.Persistence;
+using TurnoApp.Data;
 
 #nullable disable
 
-namespace TurnoApp.Infrastructure.Migrations
+namespace TurnoApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260430114452_InitialCreate")]
-    partial class InitialCreate
+    partial class AppDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,7 +22,7 @@ namespace TurnoApp.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("TurnoApp.Domain.Entities.Barbero", b =>
+            modelBuilder.Entity("TurnoApp.Models.Barbero", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -62,7 +59,7 @@ namespace TurnoApp.Infrastructure.Migrations
                     b.ToTable("Barberos");
                 });
 
-            modelBuilder.Entity("TurnoApp.Domain.Entities.HorarioDisponible", b =>
+            modelBuilder.Entity("TurnoApp.Models.HorarioDisponible", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -92,7 +89,7 @@ namespace TurnoApp.Infrastructure.Migrations
                     b.ToTable("HorariosDisponibles");
                 });
 
-            modelBuilder.Entity("TurnoApp.Domain.Entities.Servicio", b =>
+            modelBuilder.Entity("TurnoApp.Models.Servicio", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -122,7 +119,7 @@ namespace TurnoApp.Infrastructure.Migrations
                     b.ToTable("Servicios");
                 });
 
-            modelBuilder.Entity("TurnoApp.Domain.Entities.Turno", b =>
+            modelBuilder.Entity("TurnoApp.Models.Turno", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -166,7 +163,7 @@ namespace TurnoApp.Infrastructure.Migrations
                     b.ToTable("Turnos");
                 });
 
-            modelBuilder.Entity("TurnoApp.Domain.Entities.Usuario", b =>
+            modelBuilder.Entity("TurnoApp.Models.Usuario", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -208,20 +205,20 @@ namespace TurnoApp.Infrastructure.Migrations
                     b.ToTable("Usuarios");
                 });
 
-            modelBuilder.Entity("TurnoApp.Domain.Entities.Barbero", b =>
+            modelBuilder.Entity("TurnoApp.Models.Barbero", b =>
                 {
-                    b.HasOne("TurnoApp.Domain.Entities.Usuario", "Usuario")
+                    b.HasOne("TurnoApp.Models.Usuario", "Usuario")
                         .WithOne()
-                        .HasForeignKey("TurnoApp.Domain.Entities.Barbero", "UsuarioId")
+                        .HasForeignKey("TurnoApp.Models.Barbero", "UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("TurnoApp.Domain.Entities.HorarioDisponible", b =>
+            modelBuilder.Entity("TurnoApp.Models.HorarioDisponible", b =>
                 {
-                    b.HasOne("TurnoApp.Domain.Entities.Barbero", "Barbero")
+                    b.HasOne("TurnoApp.Models.Barbero", "Barbero")
                         .WithMany("Horarios")
                         .HasForeignKey("BarberoId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -230,21 +227,21 @@ namespace TurnoApp.Infrastructure.Migrations
                     b.Navigation("Barbero");
                 });
 
-            modelBuilder.Entity("TurnoApp.Domain.Entities.Turno", b =>
+            modelBuilder.Entity("TurnoApp.Models.Turno", b =>
                 {
-                    b.HasOne("TurnoApp.Domain.Entities.Barbero", "Barbero")
+                    b.HasOne("TurnoApp.Models.Barbero", "Barbero")
                         .WithMany("Turnos")
                         .HasForeignKey("BarberoId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("TurnoApp.Domain.Entities.Servicio", "Servicio")
+                    b.HasOne("TurnoApp.Models.Servicio", "Servicio")
                         .WithMany()
                         .HasForeignKey("ServicioId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("TurnoApp.Domain.Entities.Usuario", "Usuario")
+                    b.HasOne("TurnoApp.Models.Usuario", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -257,7 +254,7 @@ namespace TurnoApp.Infrastructure.Migrations
                     b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("TurnoApp.Domain.Entities.Barbero", b =>
+            modelBuilder.Entity("TurnoApp.Models.Barbero", b =>
                 {
                     b.Navigation("Horarios");
 

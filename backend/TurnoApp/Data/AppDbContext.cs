@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using TurnoApp.Domain.Entities;
+using TurnoApp.Models;
 
-namespace TurnoApp.Infrastructure.Persistence;
+namespace TurnoApp.Data;
 
 public class AppDbContext : DbContext
 {
@@ -17,13 +17,11 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Usuario — email único
         modelBuilder.Entity<Usuario>(entity =>
         {
             entity.HasIndex(u => u.Email).IsUnique();
         });
 
-        // Barbero — relación uno a uno con Usuario
         modelBuilder.Entity<Barbero>(entity =>
         {
             entity.HasOne(b => b.Usuario)
@@ -32,7 +30,6 @@ public class AppDbContext : DbContext
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // HorarioDisponible — pertenece a un Barbero
         modelBuilder.Entity<HorarioDisponible>(entity =>
         {
             entity.HasOne(h => h.Barbero)
@@ -41,7 +38,6 @@ public class AppDbContext : DbContext
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Turno — relaciones con Usuario, Barbero y Servicio
         modelBuilder.Entity<Turno>(entity =>
         {
             entity.HasOne(t => t.Usuario)

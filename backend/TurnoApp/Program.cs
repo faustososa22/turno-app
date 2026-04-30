@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using TurnoApp.Infrastructure.Persistence;
+using TurnoApp.Data;
 using Scalar.AspNetCore;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
