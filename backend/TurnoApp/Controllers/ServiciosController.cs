@@ -18,10 +18,19 @@ public class ServiciosController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAllActives()
     {
         var servicios = await context.Servicios
         .Where(s => s.Activo)
+        .ToListAsync();
+        return Ok(servicios);
+    }
+
+    [HttpGet("disabled")]
+    public async Task<IActionResult> GetAllDisabled()
+    {
+        var servicios = await context.Servicios
+        .Where(s => !s.Activo)
         .ToListAsync();
         return Ok(servicios);
     }
@@ -53,5 +62,76 @@ public class ServiciosController : ControllerBase
         await context.SaveChangesAsync();
 
         return CreatedAtAction(nameof(GetById), new { id = nuevoServicio.Id }, nuevoServicio);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Put(int id, [FromBody] ServicioDTO servicioDto)
+    {
+        var servicioExiste = await context.Servicios.FindAsync(id);
+        if (servicioExiste == null || !servicioExiste.Activo)
+        {
+            return NotFound();
+        }
+
+        servicioExiste.Nombre = servicioDto.Nombre;
+        servicioExiste.DuracionMinutos = servicioDto.DuracionMinutos;
+        servicioExiste.Descripcion = servicioDto.Descripcion;
+        servicioExiste.Precio = servicioDto.Precio;
+        await context.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPatch("{id}/reactivar")]
+    public async Task<IActionResult> Reactivar(int id)
+    {
+        var servicioExiste = await context.Servicios.FindAsync(id);
+        if (servicioExiste == null) return NotFound();
+        if (servicioExiste.Activo) return BadRequest("El servicio ya está activo.");
+        servicioExiste.Activo = true;
+        await context.SaveChangesAsync();
+        return Ok(servicioExiste);
+    }
+
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> Patch(int id, [FromBody] ServicioDTO servicioDto)
+    {
+        var servicioExiste = await context.Servicios.FindAsync(id);
+        if (servicioExiste == null || !servicioExiste.Activo)
+        {
+            return NotFound();
+        }
+
+        if (!String.IsNullOrEmpty(servicioDto.Nombre))
+        {
+            servicioExiste.Nombre = servicioDto.Nombre;
+        }
+        if (servicioDto.DuracionMinutos > 0)
+        {
+            servicioExiste.DuracionMinutos = servicioDto.DuracionMinutos;
+        }
+        if (!String.IsNullOrEmpty(servicioDto.Descripcion))
+        {
+            servicioExiste.Descripcion = servicioDto.Descripcion;
+        }
+        if (servicioDto.Precio > 0)
+        {
+            servicioExiste.Precio = servicioDto.Precio;
+        }
+        
+        await context.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var servicioExiste = await context.Servicios.FindAsync(id);
+        if (servicioExiste == null || !servicioExiste.Activo)
+        {
+            return NotFound();
+        }
+        servicioExiste.Activo = false;
+        await context.SaveChangesAsync();
+        return NoContent();
     }
 }
