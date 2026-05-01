@@ -12,11 +12,13 @@ public class ServiciosController : ControllerBase
 {
     private readonly AppDbContext context;
 
+    // Inyección de dependencias del contexto de la base de datos
     public ServiciosController(AppDbContext context)
     {
         this.context = context;
     }
 
+    // GET: api/servicios
     [HttpGet]
     public async Task<IActionResult> GetAllActives()
     {
@@ -26,6 +28,7 @@ public class ServiciosController : ControllerBase
         return Ok(servicios);
     }
 
+    // GET: api/servicios/disabled
     [HttpGet("disabled")]
     public async Task<IActionResult> GetAllDisabled()
     {
@@ -35,6 +38,7 @@ public class ServiciosController : ControllerBase
         return Ok(servicios);
     }
 
+    // GET: api/servicios/{id}
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -46,6 +50,7 @@ public class ServiciosController : ControllerBase
         return Ok(servicio);
     }
 
+    // POST: api/servicios
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] ServicioDTO servicioDto)
     {
@@ -64,6 +69,7 @@ public class ServiciosController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = nuevoServicio.Id }, nuevoServicio);
     }
 
+    // PUT: api/servicios/{id}
     [HttpPut("{id}")]
     public async Task<IActionResult> Put(int id, [FromBody] ServicioDTO servicioDto)
     {
@@ -81,6 +87,7 @@ public class ServiciosController : ControllerBase
         return NoContent();
     }
 
+    // PATCH: api/servicios/{id}/reactivar
     [HttpPatch("{id}/reactivar")]
     public async Task<IActionResult> Reactivar(int id)
     {
@@ -92,6 +99,7 @@ public class ServiciosController : ControllerBase
         return Ok(servicioExiste);
     }
 
+    // PATCH: api/servicios/{id}
     [HttpPatch("{id}")]
     public async Task<IActionResult> Patch(int id, [FromBody] ServicioDTO servicioDto)
     {
@@ -122,6 +130,7 @@ public class ServiciosController : ControllerBase
         return NoContent();
     }
 
+    // DELETE: api/servicios/{id}
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

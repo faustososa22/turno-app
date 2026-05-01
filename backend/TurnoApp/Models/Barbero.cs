@@ -14,4 +14,5 @@ public class Barbero
 
     public ICollection<HorarioDisponible> Horarios { get; set; } = new List<HorarioDisponible>();
     public ICollection<Turno> Turnos { get; set; } = new List<Turno>();
+    public ICollection<BarberoServicio> BarberoServicios { get; set; } = new List<BarberoServicio>();
 }

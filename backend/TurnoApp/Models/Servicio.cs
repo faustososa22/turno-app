@@ -8,4 +8,6 @@ public class Servicio
     public int DuracionMinutos { get; set; }
     public decimal Precio { get; set; }
     public bool Activo { get; set; } = true;
+
+    public ICollection<BarberoServicio> BarberoServicios { get; set; } = new List<BarberoServicio>();   
 }
