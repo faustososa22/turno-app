@@ -37,10 +37,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
-//Middleware para manejo de errores globales
-app.UseMiddleware<TurnoApp.Middleware.ErrorHandlingMiddleware>();
+
 
 if (app.Environment.IsDevelopment())
 {
@@ -48,6 +57,10 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
+//Middleware para manejo de errores globales
+app.UseMiddleware<TurnoApp.Middleware.ErrorHandlingMiddleware>();
+//Permitimos CORS para que podamos acceder a la API desde el frontend en desarrollo. En producción, esto debería ser más restrictivo.
+app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
