@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TurnoApp.Data;
@@ -30,6 +31,7 @@ public class ServiciosController : ControllerBase
 
     // GET: api/servicios/disabled
     [HttpGet("disabled")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> GetAllDisabled()
     {
         var servicios = await context.Servicios
@@ -52,6 +54,7 @@ public class ServiciosController : ControllerBase
 
     // POST: api/servicios
     [HttpPost]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Post([FromBody] ServicioDTO servicioDto)
     {
         var nuevoServicio = new Servicio
@@ -71,6 +74,7 @@ public class ServiciosController : ControllerBase
 
     // PUT: api/servicios/{id}
     [HttpPut("{id}")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Put(int id, [FromBody] ServicioDTO servicioDto)
     {
         var servicioExiste = await context.Servicios.FindAsync(id);
@@ -89,6 +93,7 @@ public class ServiciosController : ControllerBase
 
     // PATCH: api/servicios/{id}/reactivar
     [HttpPatch("{id}/reactivar")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Reactivar(int id)
     {
         var servicioExiste = await context.Servicios.FindAsync(id);
@@ -101,6 +106,7 @@ public class ServiciosController : ControllerBase
 
     // PATCH: api/servicios/{id}
     [HttpPatch("{id}")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Patch(int id, [FromBody] ServicioDTO servicioDto)
     {
         var servicioExiste = await context.Servicios.FindAsync(id);
@@ -132,6 +138,7 @@ public class ServiciosController : ControllerBase
 
     // DELETE: api/servicios/{id}
     [HttpDelete("{id}")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Delete(int id)
     {
         var servicioExiste = await context.Servicios.FindAsync(id);
