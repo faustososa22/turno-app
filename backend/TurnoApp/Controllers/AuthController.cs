@@ -39,10 +39,10 @@ public class AuthController : ControllerBase
             Email = dto.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
         };
-
+        var token = GenerarToken(usuario);
         context.Usuarios.Add(usuario);
         await context.SaveChangesAsync();
-        return Ok(new { message = "Usuario registrado exitosamente" });
+        return Ok(new { token });
     }
     
     [HttpPost("login")]
