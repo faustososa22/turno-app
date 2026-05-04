@@ -12,20 +12,20 @@ namespace TurnoApp.Controllers;
 public class HorariosController : ControllerBase
 {
     private readonly AppDbContext context;
+    private readonly IConfiguration configuration;
 
-    public HorariosController(AppDbContext context)
+    public HorariosController(AppDbContext context, IConfiguration configuration)
     {
         this.context = context;
+        this.configuration = configuration;
     }
 
     [HttpGet("disponibles")]
     [Authorize]
-    // Devuelve los horarios disponibles para una fecha específica
     public async Task<ActionResult> GetHorariosDisponibles([FromQuery]DateTime fecha)
     {
         var diaSemana = fecha.DayOfWeek;
 
-        // Obtener los horarios disponibles para el día de la semana
         var horarios = await context.HorariosDisponibles
             .Where(h => h.DiaSemana == diaSemana && h.Activo)
             .Select(h => new
@@ -40,6 +40,64 @@ public class HorariosController : ControllerBase
             .ToListAsync();
 
         return Ok(horarios);
+    }
+
+    [HttpGet("huecos")]
+    public async Task<ActionResult> GetHuecosDisponibles(
+        [FromQuery] int barberoId,
+        [FromQuery] int anio,
+        [FromQuery] int mes,
+        [FromQuery] int dia,
+        [FromQuery] int duracionMinutos)
+    {
+        var diaSemana = (DayOfWeek)(((int)new DateTime(anio, mes, dia).DayOfWeek));
+
+        var horario = await context.HorariosDisponibles
+            .Where(h => h.BarberoId == barberoId && h.DiaSemana == diaSemana && h.Activo)
+            .FirstOrDefaultAsync();
+
+        if (horario == null)
+            return Ok(new List<HuecoDisponibleDTO>());
+
+        var todosTurnos = await context.Turnos
+            .Where(t => t.BarberoId == barberoId && t.Estado != "cancelado")
+            .Select(t => new { t.FechaHora, t.FechaHoraFin })
+            .ToListAsync();
+        var timezoneId = configuration["Barberia:TimeZone"];
+        var timezone = TimeZoneInfo.FindSystemTimeZoneById(timezoneId!);
+        
+        var huecos = new List<HuecoDisponibleDTO>();
+        var horaActual = horario.HoraInicio;
+        var slotIntervalo = 15;
+
+        var ahoraUtc = DateTime.UtcNow;
+        var ahoraLocal = TimeZoneInfo.ConvertTimeFromUtc(ahoraUtc, timezone);
+
+        while (horaActual.AddMinutes(duracionMinutos) <= horario.HoraFin)
+        {
+            var fechaHoraSlot = new DateTime(anio, mes, dia, horaActual.Hour, horaActual.Minute, 0, DateTimeKind.Unspecified);
+            var fechaHoraSlotUtc = TimeZoneInfo.ConvertTimeToUtc(fechaHoraSlot, timezone);
+            var fechaFinServicioUtc = fechaHoraSlotUtc.AddMinutes(duracionMinutos);
+
+            bool disponible = !todosTurnos.Any(t =>
+                t.FechaHora < fechaFinServicioUtc && t.FechaHoraFin > fechaHoraSlotUtc);
+
+            bool esHoy = anio == ahoraLocal.Year && mes == ahoraLocal.Month && dia == ahoraLocal.Day;
+            bool yaPaso = esHoy && horaActual.ToTimeSpan() <= ahoraLocal.TimeOfDay;
+
+            if (!yaPaso)
+            {
+                huecos.Add(new HuecoDisponibleDTO
+                {
+                    Hora = horaActual.ToString("HH:mm"),
+                    Disponible = disponible
+                });
+            }
+
+            horaActual = horaActual.AddMinutes(slotIntervalo);
+        }
+
+        return Ok(huecos);
     }
 
     [HttpGet("barbero/{barberoId}")]

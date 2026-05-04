@@ -12,10 +12,12 @@ namespace TurnoApp.Controllers;
 public class TurnosController : ControllerBase
 {
     private readonly AppDbContext context;
+    private readonly IConfiguration _config;
 
-    public TurnosController(AppDbContext context)
+    public TurnosController(AppDbContext context, IConfiguration config)
     {
         this.context = context;
+        this._config = config;
     }
 
     [HttpGet]
@@ -77,59 +79,69 @@ public class TurnosController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> CreateTurno([FromBody] TurnoDTO turno)
+    public async Task<IActionResult> CreateTurno([FromBody] CrearTurnoDTO dto)
     {
         var usuarioId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
-        var barberoExiste = await context.Barberos.AnyAsync(b => b.Id == turno.BarberoId && b.Activo);
+
+        var barberoExiste = await context.Barberos.AnyAsync(b => b.Id == dto.BarberoId && b.Activo);
         if (!barberoExiste) return BadRequest("El barbero seleccionado no existe o no está activo.");
 
-        // Validar que el turno no se solape con otro turno del mismo barbero
-        var solapamientoBarbero = await context.Turnos.AnyAsync(t =>
-            t.BarberoId == turno.BarberoId &&
-            t.FechaHora == turno.FechaHora);
+        var servicioBase = await context.Servicios.FindAsync(dto.ServicioBaseId);
+        if (servicioBase == null) return BadRequest("El servicio base seleccionado no existe.");
+
+        var todosLosServiciosIds = new List<int> { dto.ServicioBaseId };
+        todosLosServiciosIds.AddRange(dto.AddonIds);
+
+        var servicios = await context.Servicios
+            .Where(s => todosLosServiciosIds.Contains(s.Id))
+            .ToListAsync();
+
+        if (servicios.Count != todosLosServiciosIds.Count)
+            return BadRequest("Algunos servicios no existen.");
+
+        var duracionTotal = servicios.Sum(s => s.DuracionMinutos);
+        var precioTotal = servicios.Sum(s => s.Precio);
+
+        var timezoneId = _config["Barberia:TimeZone"];
+        var timezone = TimeZoneInfo.FindSystemTimeZoneById(timezoneId!);
         
-        var barberoDisponible = await context.HorariosDisponibles.AnyAsync(h =>
-            h.BarberoId == turno.BarberoId &&
-            h.DiaSemana == turno.FechaHora.DayOfWeek &&
-            h.HoraInicio <= TimeOnly.FromTimeSpan(turno.FechaHora.TimeOfDay) &&
-            h.HoraFin > TimeOnly.FromTimeSpan(turno.FechaHora.TimeOfDay));
-        
-        if (!barberoDisponible) return BadRequest("El barbero no está disponible en ese horario.");
-    
-
-        if (solapamientoBarbero)
-        {
-            return BadRequest("El barbero ya tiene un turno en ese horario.");
-        }
-
-
-        //Verificar que el cliente no tenga otro turno en el mismo horario
-        var solapamientoUsuario = await context.Turnos.AnyAsync(t =>
-            t.UsuarioId == usuarioId &&
-            t.FechaHora == turno.FechaHora);
-
-        if (solapamientoUsuario)
-        {
-            return BadRequest("El cliente ya tiene un turno en ese horario.");
-        }
-
-        var servicio = await context.Servicios.FindAsync(turno.ServicioId);
-        if (servicio == null) return BadRequest("El servicio seleccionado no existe.");
-
-        if (servicio.DuracionMinutos <= 0) return BadRequest("La duración del servicio debe ser mayor a cero.");
+        var fechaRecibida = DateTime.Parse(dto.FechaHora);
+        var fechaHora = TimeZoneInfo.ConvertTimeToUtc(fechaRecibida, timezone);
+        var fechaFinTurno = fechaHora.AddMinutes(duracionTotal);
 
         var nuevoTurno = new Turno
         {
-            FechaHora = turno.FechaHora,
-            FechaHoraFin = turno.FechaHora.AddMinutes(servicio.DuracionMinutos),
-            BarberoId = turno.BarberoId,
+            FechaHora = fechaHora,
+            FechaHoraFin = fechaFinTurno,
+            BarberoId = dto.BarberoId,
             UsuarioId = usuarioId,
-            ServicioId = turno.ServicioId
+            ServicioId = dto.ServicioBaseId
         };
 
         context.Turnos.Add(nuevoTurno);
         await context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetTurnos), new { id = nuevoTurno.Id }, nuevoTurno);
+
+        foreach (var servicio in servicios)
+        {
+            var turnoServicio = new TurnoServicio
+            {
+                TurnoId = nuevoTurno.Id,
+                ServicioId = servicio.Id
+            };
+            context.TurnoServicios.Add(turnoServicio);
+        }
+
+        await context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetTurnos), new { id = nuevoTurno.Id }, new
+        {
+            nuevoTurno.Id,
+            nuevoTurno.FechaHora,
+            nuevoTurno.FechaHoraFin,
+            DuracionMinutos = duracionTotal,
+            PrecioTotal = precioTotal,
+            Servicios = servicios.Select(s => s.Nombre).ToList()
+        });
     }
 
     [HttpDelete("{id}")]

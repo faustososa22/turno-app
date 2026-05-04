@@ -17,4 +17,6 @@ public class Turno
 
     public int ServicioId { get; set; }
     public Servicio Servicio { get; set; } = null!;
+
+    public ICollection<TurnoServicio> TurnoServicios { get; set; } = new List<TurnoServicio>();
 }

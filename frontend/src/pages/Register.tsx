@@ -32,8 +32,9 @@ export default function Register() {
       const response = await register(data.name, data.surname, data.email, data.password);
       authLogin(response.token)
       navigate('/');
-    } catch (err) {
-      setServerError(err.response?.data?.message || 'Error creating account')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } }
+      setServerError(e.response?.data?.message || 'Error creating account')
     }
   }
 

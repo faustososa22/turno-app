@@ -29,6 +29,19 @@ public class ServiciosController : ControllerBase
         return Ok(servicios);
     }
 
+    [HttpGet("barbero/{barberoId}")]
+    public async Task<IActionResult> GetServiciosByBarbero(int barberoId)
+    {
+        var servicios = await context.BarberoServicios
+            .Where(bs => bs.BarberoId == barberoId)
+            .Include(bs => bs.Servicio)
+            .Select(bs => bs.Servicio)
+            .Where(s => s.Activo)
+            .ToListAsync();
+
+        return Ok(servicios);
+    }
+
     // GET: api/servicios/disabled
     [HttpGet("disabled")]
     [Authorize(Roles = "admin")]

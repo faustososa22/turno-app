@@ -36,6 +36,11 @@ export interface Usuario {
     barberoNombre: string
   }
   
+  export interface HuecoDisponible {
+    hora: string
+    disponible: boolean
+  }
+  
   export interface Turno {
     id: number
     fechaHora: string

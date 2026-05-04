@@ -30,8 +30,9 @@ export default function Login() {
       const response = await login(data.email, data.password)
       authLogin(response.token)
       navigate('/')
-    } catch (err) {
-      setServerError(err.response?.data?.message || 'Invalid email or password')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } }
+      setServerError(e.response?.data?.message || 'Invalid email or password')
     }
   }
 

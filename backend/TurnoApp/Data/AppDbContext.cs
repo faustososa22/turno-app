@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<Turno> Turnos { get; set; } = null!;
     public DbSet<HorarioDisponible> HorariosDisponibles { get; set; } = null!;
     public DbSet<BarberoServicio> BarberoServicios { get; set; } = null!;
+    public DbSet<TurnoServicio> TurnoServicios { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -71,6 +72,21 @@ public class AppDbContext : DbContext
                   .WithMany(s => s.BarberoServicios)
                   .HasForeignKey(bs => bs.ServicioId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<TurnoServicio>(entity =>
+        {
+            entity.HasKey(ts => new { ts.TurnoId, ts.ServicioId });
+
+            entity.HasOne(ts => ts.Turno)
+                  .WithMany(t => t.TurnoServicios)
+                  .HasForeignKey(ts => ts.TurnoId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(ts => ts.Servicio)
+                  .WithMany()
+                  .HasForeignKey(ts => ts.ServicioId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }
