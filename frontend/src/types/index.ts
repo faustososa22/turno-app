@@ -24,6 +24,7 @@ export interface Usuario {
     duracionMinutos: number
     precio: number
     activo: boolean
+    tipo: string // 👈 agregamos esto
   }
   
   export interface HorarioDisponible {

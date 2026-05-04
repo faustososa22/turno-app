@@ -107,33 +107,28 @@ public class ServiciosController : ControllerBase
     // PATCH: api/servicios/{id}
     [HttpPatch("{id}")]
     [Authorize(Roles = "admin")]
-    public async Task<IActionResult> Patch(int id, [FromBody] ServicioDTO servicioDto)
+    public async Task<IActionResult> Patch(int id, [FromBody] ServicioPatchDTO servicioDto)
     {
         var servicioExiste = await context.Servicios.FindAsync(id);
-        if (servicioExiste == null || !servicioExiste.Activo)
-        {
-            return NotFound();
-        }
+        if (servicioExiste == null || !servicioExiste.Activo) return NotFound();
 
-        if (!String.IsNullOrEmpty(servicioDto.Nombre))
-        {
-            servicioExiste.Nombre = servicioDto.Nombre;
-        }
+        if (!string.IsNullOrEmpty(servicioDto.Nombre))
+        servicioExiste.Nombre = servicioDto.Nombre;
+
+        if (!string.IsNullOrEmpty(servicioDto.Descripcion))
+        servicioExiste.Descripcion = servicioDto.Descripcion;
+
         if (servicioDto.DuracionMinutos > 0)
-        {
-            servicioExiste.DuracionMinutos = servicioDto.DuracionMinutos;
-        }
-        if (!String.IsNullOrEmpty(servicioDto.Descripcion))
-        {
-            servicioExiste.Descripcion = servicioDto.Descripcion;
-        }
+        servicioExiste.DuracionMinutos = servicioDto.DuracionMinutos.Value;
+
         if (servicioDto.Precio > 0)
-        {
-            servicioExiste.Precio = servicioDto.Precio;
-        }
-        
+        servicioExiste.Precio = servicioDto.Precio.Value;
+
+        if (!string.IsNullOrEmpty(servicioDto.Tipo))
+        servicioExiste.Tipo = servicioDto.Tipo;
+
         await context.SaveChangesAsync();
-        return NoContent();
+        return Ok(servicioExiste);
     }
 
     // DELETE: api/servicios/{id}

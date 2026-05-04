@@ -8,6 +8,7 @@ public class Servicio
     public int DuracionMinutos { get; set; }
     public decimal Precio { get; set; }
     public bool Activo { get; set; } = true;
+    public string Tipo {get; set;} = "base"; //base o addon
 
     public ICollection<BarberoServicio> BarberoServicios { get; set; } = new List<BarberoServicio>();   
 }
