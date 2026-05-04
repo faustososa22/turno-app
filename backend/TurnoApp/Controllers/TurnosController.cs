@@ -20,6 +20,23 @@ public class TurnosController : ControllerBase
         this._config = config;
     }
 
+    private int GetUserId()
+    {
+        var nameClaim = User.Claims.FirstOrDefault(c => 
+            c.Type.Contains("nameidentifier") || 
+            c.Type.EndsWith("nameidentifier"));
+        
+        return nameClaim != null ? int.Parse(nameClaim.Value) : 0;
+    }
+
+    private async Task<int?> GetBarberoId()
+    {
+        var usuarioId = GetUserId();
+        var barbero = await context.Barberos
+            .FirstOrDefaultAsync(b => b.UsuarioId == usuarioId);
+        return barbero?.Id;
+    }
+
     [HttpGet]
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> GetTurnos()
@@ -28,6 +45,7 @@ public class TurnosController : ControllerBase
             .Where(t => t.FechaHora >= DateTime.UtcNow)
             .Select( t => new
             {
+                Id = t.Id,
                 FechaHora = t.FechaHora,
                 Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
                 Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
@@ -45,6 +63,35 @@ public class TurnosController : ControllerBase
             .Where(t => t.BarberoId == barberoId && t.FechaHora >= DateTime.UtcNow)
             .Select(t => new
             {
+                Id = t.Id,
+                FechaHora = t.FechaHora,
+                Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
+                Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
+                Estado = t.Estado,
+                Servicio = t.Servicio.Nombre
+            }).ToListAsync();
+        return Ok(turnos);
+    }
+
+    [HttpGet("mis-turnos-barbero")]
+    [Authorize(Roles = "barbero")]
+    public async Task<IActionResult> GetMisTurnosComoBarbero()
+    {
+        var usuarioId = GetUserId();
+        
+        var barbero = await context.Barberos
+            .FirstOrDefaultAsync(b => b.UsuarioId == usuarioId);
+        
+        if (barbero == null)
+        {
+            return NotFound(new { message = "No eres un barbero registrado" });
+        }
+
+        var turnos = await context.Turnos
+            .Where(t => t.BarberoId == barbero.Id && t.FechaHora >= DateTime.UtcNow)
+            .Select(t => new
+            {
+                Id = t.Id,
                 FechaHora = t.FechaHora,
                 Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
                 Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
@@ -58,8 +105,18 @@ public class TurnosController : ControllerBase
     [Authorize(Roles = "admin,cliente")]
     public async Task<IActionResult> GetTurnosByCliente(int clienteId)
     {
-        var usuarioId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
+        var nameClaim = User.Claims.FirstOrDefault(c => 
+            c.Type.Contains("nameidentifier") || 
+            c.Type.EndsWith("nameidentifier"));
+        
+        if (nameClaim == null)
+        {
+            return BadRequest(new { message = "No se pudo identificar el usuario" });
+        }
+        
+        var usuarioId = int.Parse(nameClaim.Value);
         var esAdmin = User.IsInRole("admin");
+        
         if (!esAdmin && clienteId != usuarioId)        
         {
             return Forbid();
@@ -68,6 +125,7 @@ public class TurnosController : ControllerBase
             .Where(t => t.UsuarioId == clienteId && t.FechaHora >= DateTime.UtcNow)
             .Select(t => new
             {
+                Id = t.Id,
                 FechaHora = t.FechaHora,
                 Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
                 Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
@@ -81,7 +139,7 @@ public class TurnosController : ControllerBase
     [Authorize]
     public async Task<IActionResult> CreateTurno([FromBody] CrearTurnoDTO dto)
     {
-        var usuarioId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
+        var usuarioId = GetUserId();
 
         var barberoExiste = await context.Barberos.AnyAsync(b => b.Id == dto.BarberoId && b.Activo);
         if (!barberoExiste) return BadRequest("El barbero seleccionado no existe o no está activo.");
@@ -145,16 +203,35 @@ public class TurnosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "admin,cliente")]
+    [Authorize(Roles = "admin,cliente,barbero")]
     public async Task<IActionResult> DeleteTurno(int id)
     {
         var turno = await context.Turnos.FindAsync(id);
         if (turno == null) return NotFound();
-        var usuarioId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
+        
         var esAdmin = User.IsInRole("admin");
-        if (!esAdmin && turno.UsuarioId != usuarioId)
+        
+        // Admin puede cancelar cualquier turno
+        if (!esAdmin)
         {
-            return Forbid();
+            // Barbero puede cancelar turnos asignados a él
+            if (User.IsInRole("barbero"))
+            {
+                var barbero = await context.Barberos
+                    .FirstOrDefaultAsync(b => b.UsuarioId == GetUserId());
+                if (barbero == null || turno.BarberoId != barbero.Id)
+                {
+                    return Forbid();
+                }
+            }
+            // Cliente solo sus propios turnos
+            else if (User.IsInRole("cliente"))
+            {
+                if (turno.UsuarioId != GetUserId())
+                {
+                    return Forbid();
+                }
+            }
         }
 
         turno.Estado = "cancelado";
