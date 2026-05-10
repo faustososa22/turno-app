@@ -50,7 +50,8 @@ public class TurnosController : ControllerBase
                 Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
                 Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
                 Estado = t.Estado,
-                Servicio = t.Servicio.Nombre
+                Servicio = t.Servicio.Nombre,
+                PrecioTotal = t.PrecioTotal
             }).ToListAsync();
         return Ok(turnos);
     }
@@ -68,7 +69,8 @@ public class TurnosController : ControllerBase
                 Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
                 Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
                 Estado = t.Estado,
-                Servicio = t.Servicio.Nombre
+                Servicio = t.Servicio.Nombre,
+                PrecioTotal = t.PrecioTotal
             }).ToListAsync();
         return Ok(turnos);
     }
@@ -96,7 +98,8 @@ public class TurnosController : ControllerBase
                 Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
                 Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
                 Estado = t.Estado,
-                Servicio = t.Servicio.Nombre
+                Servicio = t.Servicio.Nombre,
+                PrecioTotal = t.PrecioTotal
             }).ToListAsync();
         return Ok(turnos);
     }
@@ -130,7 +133,8 @@ public class TurnosController : ControllerBase
                 Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
                 Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
                 Estado = t.Estado,
-                Servicio = t.Servicio.Nombre
+                Servicio = t.Servicio.Nombre,
+                PrecioTotal = t.PrecioTotal
             }).ToListAsync();
         return Ok(turnos);
     }
