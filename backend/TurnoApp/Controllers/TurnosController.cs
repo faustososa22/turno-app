@@ -50,7 +50,8 @@ public class TurnosController : ControllerBase
                 Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
                 Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
                 Estado = t.Estado,
-                Servicio = t.Servicio.Nombre,
+                EstadoPago = t.EstadoPago,
+                Servicios = t.TurnoServicios.Select(ts => ts.Servicio.Nombre).ToList(),
                 PrecioTotal = t.PrecioTotal
             }).ToListAsync();
         return Ok(turnos);
@@ -69,7 +70,8 @@ public class TurnosController : ControllerBase
                 Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
                 Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
                 Estado = t.Estado,
-                Servicio = t.Servicio.Nombre,
+                EstadoPago = t.EstadoPago,
+                Servicios = t.TurnoServicios.Select(ts => ts.Servicio.Nombre).ToList(),
                 PrecioTotal = t.PrecioTotal
             }).ToListAsync();
         return Ok(turnos);
@@ -98,7 +100,8 @@ public class TurnosController : ControllerBase
                 Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
                 Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
                 Estado = t.Estado,
-                Servicio = t.Servicio.Nombre,
+                EstadoPago = t.EstadoPago,
+                Servicios = t.TurnoServicios.Select(ts => ts.Servicio.Nombre).ToList(),
                 PrecioTotal = t.PrecioTotal
             }).ToListAsync();
         return Ok(turnos);
@@ -133,7 +136,8 @@ public class TurnosController : ControllerBase
                 Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
                 Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
                 Estado = t.Estado,
-                Servicio = t.Servicio.Nombre,
+                EstadoPago = t.EstadoPago,
+                Servicios = t.TurnoServicios.Select(ts => ts.Servicio.Nombre).ToList(),
                 PrecioTotal = t.PrecioTotal
             }).ToListAsync();
         return Ok(turnos);
@@ -177,7 +181,8 @@ public class TurnosController : ControllerBase
             FechaHoraFin = fechaFinTurno,
             BarberoId = dto.BarberoId,
             UsuarioId = usuarioId,
-            ServicioId = dto.ServicioBaseId
+            ServicioId = dto.ServicioBaseId,
+            PrecioTotal = precioTotal
         };
 
         context.Turnos.Add(nuevoTurno);
@@ -242,4 +247,75 @@ public class TurnosController : ControllerBase
         await context.SaveChangesAsync();
         return NoContent();
     }
+
+    [HttpPatch("{id}/estado")]
+    [Authorize(Roles = "admin,barbero")]
+    public async Task<IActionResult> CambiarEstado(int id, [FromBody] CambiarEstadoDTO dto)
+    {
+        var estadosValidos = new[] { "pendiente", "confirmado", "pagado", "cancelado" };
+        if (!estadosValidos.Contains(dto.Estado))
+            return BadRequest("Estado no válido.");
+
+        var turno = await context.Turnos.FindAsync(id);
+        if (turno == null) return NotFound();
+
+        if (turno.Estado == "cancelado")
+            return BadRequest("No se puede cambiar el estado de un turno cancelado.");
+
+        if (User.IsInRole("barbero"))
+        {
+            var barbero = await context.Barberos
+                .FirstOrDefaultAsync(b => b.UsuarioId == GetUserId());
+            if (barbero == null || turno.BarberoId != barbero.Id)
+                return Forbid();
+        }
+
+        turno.Estado = dto.Estado;
+        await context.SaveChangesAsync();
+        return Ok(new { turno.Id, turno.Estado });
+    }
+
+    [HttpPatch("{id}/confirmar")]
+  [Authorize(Roles = "admin,barbero")]
+  public async Task<IActionResult> ConfirmarTurno(int id)
+  {
+      var turno = await context.Turnos.FindAsync(id);
+      if (turno == null) return NotFound();
+
+      if (turno.Estado == "cancelado")
+          return BadRequest("No se puede confirmar un turno cancelado.");
+
+      if (User.IsInRole("barbero"))
+      {
+          var barbero = await context.Barberos
+              .FirstOrDefaultAsync(b => b.UsuarioId == GetUserId());
+          if (barbero == null || turno.BarberoId != barbero.Id) return Forbid();
+      }
+
+      turno.Estado = "confirmado";
+      await context.SaveChangesAsync();
+      return Ok(new { turno.Id, turno.Estado });
+  }
+
+  [HttpPatch("{id}/pago")]
+  [Authorize(Roles = "admin,barbero")]
+  public async Task<IActionResult> MarcarPagado(int id)
+  {
+      var turno = await context.Turnos.FindAsync(id);
+      if (turno == null) return NotFound();
+
+      if (turno.Estado == "cancelado")
+          return BadRequest("No se puede marcar como pagado un turno cancelado.");
+
+      if (User.IsInRole("barbero"))
+      {
+          var barbero = await context.Barberos
+              .FirstOrDefaultAsync(b => b.UsuarioId == GetUserId());
+          if (barbero == null || turno.BarberoId != barbero.Id) return Forbid();
+      }
+
+      turno.EstadoPago = "pagado";
+      await context.SaveChangesAsync();
+      return Ok(new { turno.Id, turno.EstadoPago });
+  }
 }

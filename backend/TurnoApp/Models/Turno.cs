@@ -6,6 +6,7 @@ public class Turno
     public DateTime FechaHora { get; set; }
     public DateTime FechaHoraFin { get; set; }
     public string Estado { get; set; } = "pendiente"; // pendiente, confirmado, cancelado
+    public string EstadoPago { get; set; } = "pendiente"; // pendiente, pagado, cancelado
     public string? Notas { get; set; }
     public decimal PrecioTotal {get; set;}
     public DateTime CreadoEn { get; set; } = DateTime.UtcNow;
