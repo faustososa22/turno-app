@@ -65,7 +65,7 @@ export function MisTurnos(){
                             <tr key={t.id}>
                                 <td>{new Date(t.fechaHora).toLocaleString()}</td>
                                 <td>{t.barbero}</td>
-                                <td>{t.servicio}</td>
+                                <td>{t.servicios && t.servicios.length > 0 ? t.servicios.join(', ') : t.servicio}</td>
                                 <td>{t.estado}</td>
                                 <td>${t.precioTotal ?? '-'}</td>
                                 <td>

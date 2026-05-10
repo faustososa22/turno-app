@@ -60,6 +60,7 @@ export interface Turno {
   barbero: string
   cliente: string
   estado: string
+  estadoPago: string
   servicio: string
   duracionMinutos?: number
   precioTotal?: number

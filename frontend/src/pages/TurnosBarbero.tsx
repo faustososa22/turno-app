@@ -40,6 +40,25 @@ export function TurnosBarbero(){
             setError('No se pudo cancelar el turno')
         }
     }
+    const onConfirmar = async (id: number) => {
+        try {
+            await turnoService.confirmarTurno(id)
+            const data = await turnoService.getMisTurnosBarbero()
+            setTurnos(data)
+        } catch {
+            setError('No se pudo confirmar el turno')
+        }
+    }
+  
+    const onMarcarPagado = async (id: number) => {
+        try {
+            await turnoService.marcarPagado(id)
+            const data = await turnoService.getMisTurnosBarbero()
+            setTurnos(data)
+        } catch {
+            setError('No se pudo marcar el turno como pagado')
+        }
+    }
 
     return(
         <Container fluid className="py-4">
@@ -56,8 +75,9 @@ export function TurnosBarbero(){
                             <th>Barbero</th>
                             <th>Servicio</th>
                             <th>Estado</th>
+                            <th>Pago</th>
                             <th>Precio</th>
-                            <th></th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -65,16 +85,26 @@ export function TurnosBarbero(){
                             <tr key={t.id}>
                                 <td>{new Date(t.fechaHora).toLocaleString()}</td>
                                 <td>{t.barbero}</td>
-                                <td>{t.servicio}</td>
+                                <td>{t.servicios && t.servicios.length > 0 ? t.servicios.join(', ') : t.servicio}</td>
                                 <td>{t.estado}</td>
+                                <td>{t.estadoPago}</td>
                                 <td>${t.precioTotal ?? '-'}</td>
-                                <td>
-                                    <Button
-                                    size="sm"
-                                    variant="outline-danger"
-                                    onClick={() => onCancelar(t.id)}
-                                    disabled={t.estado === 'cancelado'}
-                                    >
+                                <td className="d-flex gap-2">
+                                    {t.estado === 'pendiente' && (
+                                        <Button size="sm" variant="outline-success"
+                                            onClick={() => onConfirmar(t.id)}>
+                                            Confirmar
+                                        </Button>
+                                    )}
+                                    {t.estado !== 'cancelado' && t.estadoPago === 'pendiente' && (
+                                        <Button size="sm" variant="outline-primary"
+                                            onClick={() => onMarcarPagado(t.id)}>
+                                            Pagado
+                                        </Button>
+                                    )}
+                                    <Button size="sm" variant="outline-danger"
+                                        onClick={() => onCancelar(t.id)}
+                                        disabled={t.estado === 'cancelado'}>
                                         Cancelar
                                     </Button>
                                 </td>

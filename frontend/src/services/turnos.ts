@@ -30,4 +30,11 @@ export const turnoService = {
         const { data } = await apiClient.post('/api/Turnos', payload)
         return data
       },
+    async confirmarTurno(id: number) {
+        await apiClient.patch(`/api/Turnos/${id}/confirmar`)
+    },
+  
+    async marcarPagado(id: number) {
+        await apiClient.patch(`/api/Turnos/${id}/pago`)
+    }
 }
