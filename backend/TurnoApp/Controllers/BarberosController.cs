@@ -37,6 +37,26 @@ public class BarberosController : ControllerBase
         return Ok(barberos);
     }
 
+    [HttpGet("inactivos")]
+    public async Task<IActionResult> GetBarberosInactivos()
+    {
+        var barberos = await context.Barberos
+        .Include(b => b.Usuario)
+        .Where(b => !b.Activo)
+        .Select(b => new
+        {
+            b.Id,
+            b.Nombre,
+            b.Apellido,
+            b.Telefono,
+            b.FotoUrl,
+            Email = b.Usuario.Email,
+            Activo = b.Activo
+        })
+        .ToListAsync();
+        return Ok(barberos);
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetBarbero(int id)
     {
@@ -89,7 +109,7 @@ public class BarberosController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateBarbero(int id, BarberoDTO dto)
+    public async Task<IActionResult> UpdateBarbero(int id, BarberoUpdateDTO dto)
     {
         var barbero = await context.Barberos.FindAsync(id);
         if (barbero == null) return NotFound();
