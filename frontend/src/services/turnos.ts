@@ -2,18 +2,21 @@ import { apiClient } from "../api/client"
 import type { Turno } from "../types"
 
 export const turnoService = {
-    async getAdminTurnos(){
-        const {data} = await apiClient.get<Turno[]>('/api/Turnos')
+    async getAdminTurnos(fecha?: string){
+        const params = fecha ? { fecha } : {}
+        const {data} = await apiClient.get<Turno[]>('/api/Turnos', { params })
         return data
     },
 
-    async getMisTurnosBarbero(){
-        const {data} = await apiClient.get<Turno[]>('/api/Turnos/mis-turnos-barbero')
+    async getMisTurnosBarbero(fecha?: string){
+        const params = fecha ? { fecha } : {}
+        const {data} = await apiClient.get<Turno[]>('/api/Turnos/mis-turnos-barbero', { params })
         return data
     },
 
-    async getTurnosCliente(clienteId: number){
-        const {data} = await apiClient.get<Turno[]>(`/api/Turnos/cliente/${clienteId}`)
+    async getTurnosCliente(clienteId: number, fecha?: string){
+        const params = fecha ? { fecha } : {}
+        const {data} = await apiClient.get<Turno[]>(`/api/Turnos/cliente/${clienteId}`, { params })
         return data
     },
 

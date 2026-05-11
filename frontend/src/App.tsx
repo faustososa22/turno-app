@@ -1,7 +1,8 @@
 import { Routes, Route } from 'react-router-dom'
 import { Login } from './pages/Login'
 import { Register } from './pages/Register'
-import { Home, Placeholder } from './pages/Home'
+import { Placeholder } from './pages/Home'
+import { Landing } from './pages/Landing'
 import { ProtectedRoute } from './auth/ProtectedRoute'
 import { AppNavBar } from './components/Navbar'
 import { MisTurnos } from './pages/MisTurnos'
@@ -17,11 +18,11 @@ function App() {
     <>
     <AppNavBar/>
     <Routes>
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
       <Route element={<ProtectedRoute />}>
-        <Route path="/" element={<Home />} />
         <Route path="/mis-turnos" element={<MisTurnos/>} />
         <Route path="/nuevo-turno" element={<NuevoTurno/>} />
         <Route path="/turnos-barbero" element={<TurnosBarbero/>} />

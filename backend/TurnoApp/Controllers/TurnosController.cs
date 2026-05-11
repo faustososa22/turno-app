@@ -39,107 +39,136 @@ public class TurnosController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = "admin")]
-    public async Task<IActionResult> GetTurnos()
+    public async Task<IActionResult> GetTurnos([FromQuery] DateTime? fecha = null)
     {
-        var turnos = await context.Turnos
-            .Where(t => t.FechaHora >= DateTime.UtcNow)
-            .Select( t => new
-            {
-                Id = t.Id,
-                FechaHora = t.FechaHora,
-                Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
-                Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
-                Estado = t.Estado,
-                EstadoPago = t.EstadoPago,
-                Servicios = t.TurnoServicios.Select(ts => ts.Servicio.Nombre).ToList(),
-                PrecioTotal = t.PrecioTotal
-            }).ToListAsync();
+        var query = context.Turnos.AsQueryable();
+        if (fecha.HasValue)
+        {
+            var inicio = DateTime.SpecifyKind(fecha.Value.Date, DateTimeKind.Utc);
+            var fin = inicio.AddDays(1);
+            query = query.Where(t => t.FechaHora >= inicio && t.FechaHora < fin);
+        }
+        else
+        {
+            query = query.Where(t => t.FechaHora >= DateTime.UtcNow);
+        }
+
+        var turnos = await query.Select(t => new
+        {
+            Id = t.Id,
+            FechaHora = t.FechaHora,
+            Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
+            Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
+            Estado = t.Estado,
+            EstadoPago = t.EstadoPago,
+            Servicios = t.TurnoServicios.Select(ts => ts.Servicio.Nombre).ToList(),
+            PrecioTotal = t.PrecioTotal
+        }).ToListAsync();
         return Ok(turnos);
     }
 
     [HttpGet("barbero/{barberoId}")]
     [Authorize(Roles = "admin,barbero")]
-    public async Task<IActionResult> GetTurnosByBarbero(int barberoId)
+    public async Task<IActionResult> GetTurnosByBarbero(int barberoId, [FromQuery] DateTime? fecha = null)
     {
-        var turnos = await context.Turnos
-            .Where(t => t.BarberoId == barberoId && t.FechaHora >= DateTime.UtcNow)
-            .Select(t => new
-            {
-                Id = t.Id,
-                FechaHora = t.FechaHora,
-                Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
-                Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
-                Estado = t.Estado,
-                EstadoPago = t.EstadoPago,
-                Servicios = t.TurnoServicios.Select(ts => ts.Servicio.Nombre).ToList(),
-                PrecioTotal = t.PrecioTotal
-            }).ToListAsync();
+        var query = context.Turnos.Where(t => t.BarberoId == barberoId);
+        if (fecha.HasValue)
+        {
+            var inicio = DateTime.SpecifyKind(fecha.Value.Date, DateTimeKind.Utc);
+            var fin = inicio.AddDays(1);
+            query = query.Where(t => t.FechaHora >= inicio && t.FechaHora < fin);
+        }
+        else
+        {
+            query = query.Where(t => t.FechaHora >= DateTime.UtcNow);
+        }
+
+        var turnos = await query.Select(t => new
+        {
+            Id = t.Id,
+            FechaHora = t.FechaHora,
+            Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
+            Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
+            Estado = t.Estado,
+            EstadoPago = t.EstadoPago,
+            Servicios = t.TurnoServicios.Select(ts => ts.Servicio.Nombre).ToList(),
+            PrecioTotal = t.PrecioTotal
+        }).ToListAsync();
         return Ok(turnos);
     }
 
     [HttpGet("mis-turnos-barbero")]
     [Authorize(Roles = "barbero")]
-    public async Task<IActionResult> GetMisTurnosComoBarbero()
+    public async Task<IActionResult> GetMisTurnosComoBarbero([FromQuery] DateTime? fecha = null)
     {
         var usuarioId = GetUserId();
-        
-        var barbero = await context.Barberos
-            .FirstOrDefaultAsync(b => b.UsuarioId == usuarioId);
-        
+        var barbero = await context.Barberos.FirstOrDefaultAsync(b => b.UsuarioId == usuarioId);
         if (barbero == null)
-        {
             return NotFound(new { message = "No eres un barbero registrado" });
+
+        var query = context.Turnos.Where(t => t.BarberoId == barbero.Id);
+        if (fecha.HasValue)
+        {
+            var inicio = DateTime.SpecifyKind(fecha.Value.Date, DateTimeKind.Utc);
+            var fin = inicio.AddDays(1);
+            query = query.Where(t => t.FechaHora >= inicio && t.FechaHora < fin);
+        }
+        else
+        {
+            query = query.Where(t => t.FechaHora >= DateTime.UtcNow);
         }
 
-        var turnos = await context.Turnos
-            .Where(t => t.BarberoId == barbero.Id && t.FechaHora >= DateTime.UtcNow)
-            .Select(t => new
-            {
-                Id = t.Id,
-                FechaHora = t.FechaHora,
-                Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
-                Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
-                Estado = t.Estado,
-                EstadoPago = t.EstadoPago,
-                Servicios = t.TurnoServicios.Select(ts => ts.Servicio.Nombre).ToList(),
-                PrecioTotal = t.PrecioTotal
-            }).ToListAsync();
+        var turnos = await query.Select(t => new
+        {
+            Id = t.Id,
+            FechaHora = t.FechaHora,
+            Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
+            Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
+            Estado = t.Estado,
+            EstadoPago = t.EstadoPago,
+            Servicios = t.TurnoServicios.Select(ts => ts.Servicio.Nombre).ToList(),
+            PrecioTotal = t.PrecioTotal
+        }).ToListAsync();
         return Ok(turnos);
     }
 
     [HttpGet("cliente/{clienteId}")]
     [Authorize(Roles = "admin,cliente")]
-    public async Task<IActionResult> GetTurnosByCliente(int clienteId)
+    public async Task<IActionResult> GetTurnosByCliente(int clienteId, [FromQuery] DateTime? fecha = null)
     {
-        var nameClaim = User.Claims.FirstOrDefault(c => 
-            c.Type.Contains("nameidentifier") || 
-            c.Type.EndsWith("nameidentifier"));
-        
+        var nameClaim = User.Claims.FirstOrDefault(c =>
+            c.Type.Contains("nameidentifier") || c.Type.EndsWith("nameidentifier"));
         if (nameClaim == null)
-        {
             return BadRequest(new { message = "No se pudo identificar el usuario" });
-        }
-        
+
         var usuarioId = int.Parse(nameClaim.Value);
         var esAdmin = User.IsInRole("admin");
-        
-        if (!esAdmin && clienteId != usuarioId)        
-        {
+        if (!esAdmin && clienteId != usuarioId)
             return Forbid();
+
+        var query = context.Turnos.Where(t => t.UsuarioId == clienteId);
+        if (fecha.HasValue)
+        {
+            var inicio = DateTime.SpecifyKind(fecha.Value.Date, DateTimeKind.Utc);
+            var fin = inicio.AddDays(1);
+            query = query.Where(t => t.FechaHora >= inicio && t.FechaHora < fin);
         }
-        var turnos = await context.Turnos
-            .Where(t => t.UsuarioId == clienteId && t.FechaHora >= DateTime.UtcNow)
-            .Select(t => new
-            {
-                Id = t.Id,
-                FechaHora = t.FechaHora,
-                Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
-                Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
-                Estado = t.Estado,
-                EstadoPago = t.EstadoPago,
-                Servicios = t.TurnoServicios.Select(ts => ts.Servicio.Nombre).ToList(),
-                PrecioTotal = t.PrecioTotal
-            }).ToListAsync();
+        else
+        {
+            query = query.Where(t => t.FechaHora >= DateTime.UtcNow);
+        }
+
+        var turnos = await query.Select(t => new
+        {
+            Id = t.Id,
+            FechaHora = t.FechaHora,
+            Barbero = t.Barbero.Nombre + " " + t.Barbero.Apellido,
+            Cliente = t.Usuario.Nombre + " " + t.Usuario.Apellido,
+            Estado = t.Estado,
+            EstadoPago = t.EstadoPago,
+            Servicios = t.TurnoServicios.Select(ts => ts.Servicio.Nombre).ToList(),
+            PrecioTotal = t.PrecioTotal
+        }).ToListAsync();
         return Ok(turnos);
     }
 
