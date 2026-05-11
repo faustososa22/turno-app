@@ -7,6 +7,9 @@ import { AppNavBar } from './components/Navbar'
 import { MisTurnos } from './pages/MisTurnos'
 import { TurnosBarbero } from './pages/TurnosBarbero'
 import { Dashboard } from './pages/admin/Dashboard'
+import { AdminServicios } from './pages/admin/AdminServicios'
+import { AdminBarberos } from './pages/admin/AdminBarberos'
+import { AdminHorarios } from './pages/admin/AdminHorarios'
 import { NuevoTurno } from './pages/NuevoTurno'
 
 function App() {
@@ -26,9 +29,9 @@ function App() {
 
       <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
         <Route path="/admin" element={<Dashboard/>} />
-        <Route path="/admin/barberos" element={<Placeholder titulo="Admin Barberos" />} />
-        <Route path="/admin/servicios" element={<Placeholder titulo="Admin Servicios" />} />
-        <Route path="/admin/horarios" element={<Placeholder titulo="Admin Horarios" />} />
+        <Route path="/admin/barberos" element={<AdminBarberos />} />
+        <Route path="/admin/servicios" element={<AdminServicios />} />
+        <Route path="/admin/horarios" element={<AdminHorarios />} />
       </Route>
 
       <Route path="*" element={<Placeholder titulo="404 - Página no encontrada" />} />
