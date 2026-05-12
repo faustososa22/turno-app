@@ -21,7 +21,7 @@ export function Dashboard(){
             const data = await turnoService.getAdminTurnos(f || undefined)
             setTurnos(data)
         } catch {
-            setToast({ message: 'No se pudieron cargar los turnos', variant: 'danger' })
+            setToast({ message: 'Could not load appointments', variant: 'danger' })
         } finally {
             setLoading(false)
         }
@@ -37,9 +37,9 @@ export function Dashboard(){
         try {
             await turnoService.cancelarTurno(turnoAConfirmar)
             await cargarTurnos(fecha)
-            setToast({ message: 'Turno cancelado', variant: 'danger' })
+            setToast({ message: 'Appointment cancelled', variant: 'danger' })
         } catch {
-            setToast({ message: 'No se pudo cancelar el turno', variant: 'danger' })
+            setToast({ message: 'Could not cancel the appointment', variant: 'danger' })
         } finally {
             setTurnoAConfirmar(null)
         }
@@ -49,9 +49,9 @@ export function Dashboard(){
         try {
             await turnoService.confirmarTurno(id)
             await cargarTurnos(fecha)
-            setToast({ message: 'Turno confirmado', variant: 'success' })
+            setToast({ message: 'Appointment confirmed', variant: 'success' })
         } catch {
-            setToast({ message: 'No se pudo confirmar el turno', variant: 'danger' })
+            setToast({ message: 'Could not confirm the appointment', variant: 'danger' })
         }
     }
 
@@ -59,9 +59,9 @@ export function Dashboard(){
         try {
             await turnoService.marcarPagado(id)
             await cargarTurnos(fecha)
-            setToast({ message: 'Turno marcado como pagado', variant: 'success' })
+            setToast({ message: 'Appointment marked as paid', variant: 'success' })
         } catch {
-            setToast({ message: 'No se pudo marcar el turno como pagado', variant: 'danger' })
+            setToast({ message: 'Could not mark the appointment as paid', variant: 'danger' })
         }
     }
 
@@ -76,18 +76,18 @@ export function Dashboard(){
 
             <ConfirmModal
                 show={turnoAConfirmar !== null}
-                titulo="Cancelar turno"
-                mensaje="¿Seguro que querés cancelar este turno? Esta acción no se puede deshacer."
-                labelConfirmar="Sí, cancelar"
+                titulo="Cancel appointment"
+                mensaje="Are you sure you want to cancel this appointment? This action cannot be undone."
+                labelConfirmar="Yes, cancel"
                 onConfirmar={onCancelar}
                 onCancelar={() => setTurnoAConfirmar(null)}
             />
 
-            <h2 className="mb-3">Turnos (admin)</h2>
+            <h2 className="mb-3">Appointments (admin)</h2>
 
             <Row className="mb-3 align-items-end g-2">
                 <Col xs="auto">
-                    <Form.Label className="mb-1">Filtrar por fecha</Form.Label>
+                    <Form.Label className="mb-1">Filter by date</Form.Label>
                     <Form.Control
                         type="date"
                         value={fecha}
@@ -97,7 +97,7 @@ export function Dashboard(){
                 {fecha && (
                     <Col xs="auto">
                         <Button variant="outline-secondary" onClick={() => setFecha('')}>
-                            Ver todos
+                            View all
                         </Button>
                     </Col>
                 )}
@@ -109,13 +109,13 @@ export function Dashboard(){
                 <Table striped bordered hover responsive>
                     <thead>
                         <tr>
-                            <th>Fecha</th>
-                            <th>Barbero</th>
-                            <th>Cliente</th>
-                            <th>Servicio</th>
-                            <th>Estado</th>
-                            <th>Pago</th>
-                            <th>Precio</th>
+                            <th>Date</th>
+                            <th>Barber</th>
+                            <th>Client</th>
+                            <th>Service</th>
+                            <th>Status</th>
+                            <th>Payment</th>
+                            <th>Price</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -141,19 +141,19 @@ export function Dashboard(){
                                     {t.estado === 'pendiente' && (
                                         <Button size="sm" variant="outline-success"
                                             onClick={() => onConfirmar(t.id)}>
-                                            Confirmar
+                                            Confirm
                                         </Button>
                                     )}
                                     {t.estado !== 'cancelado' && t.estadoPago === 'pendiente' && (
                                         <Button size="sm" variant="outline-primary"
                                             onClick={() => onMarcarPagado(t.id)}>
-                                            Pagado
+                                            Paid
                                         </Button>
                                     )}
                                     <Button size="sm" variant="outline-danger"
                                         onClick={() => setTurnoAConfirmar(t.id)}
                                         disabled={t.estado === 'cancelado'}>
-                                        Cancelar
+                                        Cancel
                                     </Button>
                                 </td>
                             </tr>
@@ -161,7 +161,7 @@ export function Dashboard(){
                         {turnos.length === 0 && (
                             <tr>
                                 <td colSpan={8}>
-                                    {fecha ? 'No hay turnos para esa fecha.' : 'No hay turnos próximos.'}
+                                    {fecha ? 'No appointments for that date.' : 'No upcoming appointments.'}
                                 </td>
                             </tr>
                         )}

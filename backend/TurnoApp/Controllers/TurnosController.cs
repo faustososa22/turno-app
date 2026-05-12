@@ -104,7 +104,7 @@ public class TurnosController : ControllerBase
         var usuarioId = GetUserId();
         var barbero = await context.Barberos.FirstOrDefaultAsync(b => b.UsuarioId == usuarioId);
         if (barbero == null)
-            return NotFound(new { message = "No eres un barbero registrado" });
+            return NotFound(new { message = "You are not a registered barber" });
 
         var query = context.Turnos.Where(t => t.BarberoId == barbero.Id);
         if (fecha.HasValue)
@@ -139,7 +139,7 @@ public class TurnosController : ControllerBase
         var nameClaim = User.Claims.FirstOrDefault(c =>
             c.Type.Contains("nameidentifier") || c.Type.EndsWith("nameidentifier"));
         if (nameClaim == null)
-            return BadRequest(new { message = "No se pudo identificar el usuario" });
+            return BadRequest(new { message = "Could not identify the user" });
 
         var usuarioId = int.Parse(nameClaim.Value);
         var esAdmin = User.IsInRole("admin");
@@ -179,10 +179,10 @@ public class TurnosController : ControllerBase
         var usuarioId = GetUserId();
 
         var barberoExiste = await context.Barberos.AnyAsync(b => b.Id == dto.BarberoId && b.Activo);
-        if (!barberoExiste) return BadRequest("El barbero seleccionado no existe o no está activo.");
+        if (!barberoExiste) return BadRequest("The selected barber does not exist or is not active.");
 
         var servicioBase = await context.Servicios.FindAsync(dto.ServicioBaseId);
-        if (servicioBase == null) return BadRequest("El servicio base seleccionado no existe.");
+        if (servicioBase == null) return BadRequest("The selected base service does not exist.");
 
         var todosLosServiciosIds = new List<int> { dto.ServicioBaseId };
         todosLosServiciosIds.AddRange(dto.AddonIds);
@@ -192,7 +192,7 @@ public class TurnosController : ControllerBase
             .ToListAsync();
 
         if (servicios.Count != todosLosServiciosIds.Count)
-            return BadRequest("Algunos servicios no existen.");
+            return BadRequest("Some services do not exist.");
 
         var duracionTotal = servicios.Sum(s => s.DuracionMinutos);
         var precioTotal = servicios.Sum(s => s.Precio);
@@ -283,13 +283,13 @@ public class TurnosController : ControllerBase
     {
         var estadosValidos = new[] { "pendiente", "confirmado", "pagado", "cancelado" };
         if (!estadosValidos.Contains(dto.Estado))
-            return BadRequest("Estado no válido.");
+            return BadRequest("Invalid status.");
 
         var turno = await context.Turnos.FindAsync(id);
         if (turno == null) return NotFound();
 
         if (turno.Estado == "cancelado")
-            return BadRequest("No se puede cambiar el estado de un turno cancelado.");
+            return BadRequest("Cannot change the status of a cancelled appointment.");
 
         if (User.IsInRole("barbero"))
         {
@@ -312,7 +312,7 @@ public class TurnosController : ControllerBase
       if (turno == null) return NotFound();
 
       if (turno.Estado == "cancelado")
-          return BadRequest("No se puede confirmar un turno cancelado.");
+          return BadRequest("Cannot confirm a cancelled appointment.");
 
       if (User.IsInRole("barbero"))
       {
@@ -334,7 +334,7 @@ public class TurnosController : ControllerBase
       if (turno == null) return NotFound();
 
       if (turno.Estado == "cancelado")
-          return BadRequest("No se puede marcar como pagado un turno cancelado.");
+          return BadRequest("Cannot mark a cancelled appointment as paid.");
 
       if (User.IsInRole("barbero"))
       {

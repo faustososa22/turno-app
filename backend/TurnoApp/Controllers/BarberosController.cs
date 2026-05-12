@@ -150,7 +150,7 @@ public class BarberosController : ControllerBase
     {
         var barbero = await context.Barberos.FindAsync(id);
         if (barbero == null) return NotFound();
-        if (barbero.Activo) return BadRequest("El barbero ya está activo.");
+        if (barbero.Activo) return BadRequest("The barber is already active.");
 
         barbero.Activo = true;
         await context.SaveChangesAsync();
@@ -183,7 +183,7 @@ public class BarberosController : ControllerBase
         if (servicio == null) return NotFound();
 
         var existeRelacion = await context.BarberoServicios.AnyAsync(bs => bs.BarberoId == id && bs.ServicioId == idServicio);
-        if (existeRelacion) return BadRequest("El barbero ya tiene asignado ese servicio");
+        if (existeRelacion) return BadRequest("The barber already has that service assigned");
 
         var barberoServicio = new BarberoServicio
         {
@@ -206,7 +206,7 @@ public class BarberosController : ControllerBase
         if (servicio == null) return NotFound();
 
         var barberoServicio = await context.BarberoServicios.FirstOrDefaultAsync(bs => bs.BarberoId == id && bs.ServicioId == idServicio);
-        if (barberoServicio == null) return NotFound("El barbero no tiene asignado ese servicio");
+        if (barberoServicio == null) return NotFound("The barber does not have that service assigned");
 
         context.BarberoServicios.Remove(barberoServicio);
         await context.SaveChangesAsync();

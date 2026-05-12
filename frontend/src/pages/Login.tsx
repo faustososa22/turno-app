@@ -24,7 +24,7 @@ export function Login(){
             navigate('/')
         }catch (err: unknown){
             const message =
-                (err as {response?: {data?: {message?: string}}}).response?.data?.message ?? 'No se pudo iniciar sesión'
+                (err as {response?: {data?: {message?: string}}}).response?.data?.message ?? 'Could not sign in'
                 setError(message);          
         }finally{
             setLoading(false)
@@ -36,7 +36,7 @@ export function Login(){
             <Col xs={12} sm={10} md={8} lg={5} xl={4}>
               <Card>
                 <Card.Body>
-                  <Card.Title className="mb-4">Iniciar sesión</Card.Title>
+                  <Card.Title className="mb-4">Sign in</Card.Title>
       
                   {error && <Alert variant="danger">{error}</Alert>}
       
@@ -53,7 +53,7 @@ export function Login(){
                     </Form.Group>
       
                     <Form.Group className="mb-3" controlId="loginPassword">
-                      <Form.Label>Contraseña</Form.Label>
+                      <Form.Label>Password</Form.Label>
                       <Form.Control
                         type="password"
                         value={password}
@@ -63,12 +63,12 @@ export function Login(){
                     </Form.Group>
       
                     <Button type="submit" variant="primary" disabled={loading} className="w-100">
-                      {loading ? <Spinner size="sm" animation="border" /> : 'Entrar'}
+                      {loading ? <Spinner size="sm" animation="border" /> : 'Sign in'}
                     </Button>
                   </Form>
       
                   <div className="mt-3 text-center">
-                    ¿No tenés cuenta? <Link to="/register">Registrate</Link>
+                    Don't have an account? <Link to="/register">Sign up</Link>
                   </div>
                 </Card.Body>
               </Card>

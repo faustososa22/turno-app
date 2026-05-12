@@ -35,7 +35,7 @@ export function NuevoTurno() {
         const data = await barberosService.getActivos()
         setBarberos(data)
       } catch {
-        setError('No se pudieron cargar los barberos')
+        setError('Could not load barbers')
       } finally {
         setLoadingInicial(false)
       }
@@ -62,7 +62,7 @@ export function NuevoTurno() {
         setServicioBaseId('')
         setAddonIds([])
       } catch {
-        setError('No se pudieron cargar los servicios del barbero')
+        setError('Could not load barber services')
       }
     }
 
@@ -105,7 +105,7 @@ export function NuevoTurno() {
       })
       setHuecos(data)
     } catch {
-      setError('No se pudieron cargar los horarios disponibles')
+      setError('Could not load available time slots')
     } finally {
       setLoadingHuecos(false)
       setHuecosConsultados(true)
@@ -125,7 +125,7 @@ export function NuevoTurno() {
     setOk(null)
 
     if (!barberoId || !servicioBaseId || !fecha || !hora) {
-      setError('Completá todos los campos obligatorios')
+      setError('Please fill in all required fields')
       return
     }
 
@@ -138,10 +138,10 @@ export function NuevoTurno() {
         fechaHora: `${fecha}T${hora}:00`,
       })
 
-      setOk('Turno creado correctamente')
+      setOk('Appointment booked successfully')
       setTimeout(() => navigate('/mis-turnos'), 800)
     } catch {
-      setError('No se pudo crear el turno')
+      setError('Could not create the appointment')
     } finally {
       setLoadingSubmit(false)
     }
@@ -157,7 +157,7 @@ export function NuevoTurno() {
 
   return (
     <Container fluid className="py-4">
-      <h2 className="mb-3">Nuevo turno</h2>
+      <h2 className="mb-3">New appointment</h2>
 
       {error && <Alert variant="danger">{error}</Alert>}
       {ok && <Alert variant="success">{ok}</Alert>}
@@ -168,13 +168,13 @@ export function NuevoTurno() {
             <Card.Body>
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Barbero</Form.Label>
+                  <Form.Label>Barber</Form.Label>
                   <Form.Select
                     value={barberoId}
                     onChange={(e) => setBarberoId(e.target.value ? Number(e.target.value) : '')}
                     required
                   >
-                    <option value="">Seleccioná un barbero</option>
+                    <option value="">Select a barber</option>
                     {barberos.map((b) => (
                       <option key={b.id} value={b.id}>
                         {b.nombre} {b.apellido}
@@ -184,7 +184,7 @@ export function NuevoTurno() {
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                  <Form.Label>Servicio base</Form.Label>
+                  <Form.Label>Base service</Form.Label>
                   <Form.Select
                     value={servicioBaseId}
                     onChange={(e) => {setServicioBaseId(e.target.value ? Number(e.target.value) : '')
@@ -195,7 +195,7 @@ export function NuevoTurno() {
                     required
                     disabled={!barberoId}
                   >
-                    <option value="">Seleccioná un servicio base</option>
+                    <option value="">Select a base service</option>
                     {serviciosBase.map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.nombre} ({s.duracionMinutos} min - ${s.precio})
@@ -205,8 +205,8 @@ export function NuevoTurno() {
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                  <Form.Label>Addons (opcionales)</Form.Label>
-                  {addons.length === 0 && <div className="text-muted">No hay addons para este barbero.</div>}
+                  <Form.Label>Add-ons (optional)</Form.Label>
+                  {addons.length === 0 && <div className="text-muted">No add-ons available for this barber.</div>}
                   {addons.map((s) => (
                     <Form.Check
                       key={s.id}
@@ -223,7 +223,7 @@ export function NuevoTurno() {
                 <Row className="g-3 mb-3">
                   <Col md={6}>
                     <Form.Group>
-                      <Form.Label>Fecha</Form.Label>
+                      <Form.Label>Date</Form.Label>
                       <Form.Control
                         type="date"
                         value={fecha}
@@ -245,20 +245,20 @@ export function NuevoTurno() {
                       onClick={cargarHuecos}
                       disabled={!barberoId || !fecha || !duracionTotal || loadingHuecos}
                     >
-                      {loadingHuecos ? 'Cargando...' : 'Buscar horarios'}
+                      {loadingHuecos ? 'Loading...' : 'Search time slots'}
                     </Button>
                   </Col>
                 </Row>
 
                 <Form.Group className="mb-3">
-                  <Form.Label>Horario</Form.Label>
+                  <Form.Label>Time slot</Form.Label>
                   <Form.Select
                     value={hora}
                     onChange={(e) => setHora(e.target.value)}
                     required
                     disabled={huecos.length === 0}
                   >
-                    <option value="">Seleccioná un horario</option>
+                    <option value="">Select a time slot</option>
                     {huecos
                       .filter((h) => h.disponible)
                       .map((h) => (
@@ -269,11 +269,11 @@ export function NuevoTurno() {
                   </Form.Select>
                 </Form.Group>
                 {huecosConsultados && huecos.filter(h => h.disponible).length === 0 && (
-                    <p className="text-danger mt-1">No hay horarios disponibles para ese día.</p>
+                    <p className="text-danger mt-1">No available time slots for that day.</p>
                 )}
 
                 <Button type="submit" variant="primary" disabled={loadingSubmit}>
-                  {loadingSubmit ? 'Confirmando...' : 'Confirmar turno'}
+                  {loadingSubmit ? 'Confirming...' : 'Confirm appointment'}
                 </Button>
               </Form>
             </Card.Body>
@@ -283,12 +283,12 @@ export function NuevoTurno() {
         <Col lg={4}>
           <Card>
             <Card.Body>
-              <Card.Title>Resumen</Card.Title>
+              <Card.Title>Summary</Card.Title>
               <p className="mb-2">
-                Duración total: <Badge bg="secondary">{duracionTotal} min</Badge>
+                Total duration: <Badge bg="secondary">{duracionTotal} min</Badge>
               </p>
               <p className="mb-0">
-                Precio total: <Badge bg="success">${precioTotal}</Badge>
+                Total price: <Badge bg="success">${precioTotal}</Badge>
               </p>
             </Card.Body>
           </Card>

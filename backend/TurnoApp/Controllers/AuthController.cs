@@ -29,7 +29,7 @@ public class AuthController : ControllerBase
         var usuarioExiste = await context.Usuarios.AnyAsync(u => u.Email == dto.Email);
 
         if (usuarioExiste){
-            return BadRequest(new { message = "El email ya está registrado" });
+            return BadRequest(new { message = "Email already registered" });
         }
 
         var usuario = new Usuario
@@ -51,7 +51,7 @@ public class AuthController : ControllerBase
         var usuarioExiste = await context.Usuarios.FirstOrDefaultAsync(u => u.Email == dto.Email);
         if (usuarioExiste == null || !BCrypt.Net.BCrypt.Verify(dto.Password, usuarioExiste.PasswordHash))
         {
-            return Unauthorized(new { message = "Credenciales inválidas" });
+            return Unauthorized(new { message = "Invalid credentials" });
         }
 
         var token = GenerarToken(usuarioExiste);

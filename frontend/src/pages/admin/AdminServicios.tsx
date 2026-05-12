@@ -30,7 +30,7 @@ export function AdminServicios() {
         setActivos(a)
         setDesactivados(d)
       } catch {
-        setError('No se pudieron cargar los servicios')
+        setError('Could not load services')
       } finally {
         setLoading(false)
       }
@@ -64,15 +64,15 @@ export function AdminServicios() {
     try {
       if (editandoId !== null) {
         await serviciosService.actualizar(editandoId, form)
-        setOk('Servicio actualizado correctamente')
+        setOk('Service updated successfully')
       } else {
         await serviciosService.crear(form)
-        setOk('Servicio creado correctamente')
+        setOk('Service created successfully')
       }
       cancelarForm()
       setRefresh(r => r + 1)
     } catch {
-      setError('No se pudo guardar el servicio')
+      setError('Could not save service')
     } finally {
       setLoadingForm(false)
     }
@@ -84,7 +84,7 @@ export function AdminServicios() {
       await serviciosService.desactivar(id)
       setRefresh(r => r + 1)
     } catch {
-      setError('No se pudo desactivar el servicio')
+      setError('Could not deactivate service')
     }
   }
 
@@ -94,16 +94,16 @@ export function AdminServicios() {
       await serviciosService.reactivar(id)
       setRefresh(r => r + 1)
     } catch {
-      setError('No se pudo reactivar el servicio')
+      setError('Could not reactivate service')
     }
   }
 
   return (
     <Container fluid className="py-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2 className="mb-0">Servicios</h2>
+        <h2 className="mb-0">Services</h2>
         {!mostrarForm && (
-          <Button variant="primary" onClick={abrirCrear}>Nuevo servicio</Button>
+          <Button variant="primary" onClick={abrirCrear}>New service</Button>
         )}
       </div>
 
@@ -113,12 +113,12 @@ export function AdminServicios() {
       {mostrarForm && (
         <Card className="mb-4">
           <Card.Body>
-            <Card.Title>{editandoId ? 'Editar servicio' : 'Nuevo servicio'}</Card.Title>
+            <Card.Title>{editandoId ? 'Edit service' : 'New service'}</Card.Title>
             <Form onSubmit={handleSubmit}>
               <Row className="g-3">
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label>Nombre</Form.Label>
+                    <Form.Label>Name</Form.Label>
                     <Form.Control
                       value={form.nombre}
                       required
@@ -128,7 +128,7 @@ export function AdminServicios() {
                 </Col>
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label>Tipo</Form.Label>
+                    <Form.Label>Type</Form.Label>
                     <Form.Select
                       value={form.tipo}
                       onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))}
@@ -140,7 +140,7 @@ export function AdminServicios() {
                 </Col>
                 <Col md={12}>
                   <Form.Group>
-                    <Form.Label>Descripción</Form.Label>
+                    <Form.Label>Description</Form.Label>
                     <Form.Control
                       value={form.descripcion}
                       required
@@ -150,7 +150,7 @@ export function AdminServicios() {
                 </Col>
                 <Col md={4}>
                   <Form.Group>
-                    <Form.Label>Duración (minutos)</Form.Label>
+                    <Form.Label>Duration (minutes)</Form.Label>
                     <Form.Control
                       type="number"
                       min={1}
@@ -162,7 +162,7 @@ export function AdminServicios() {
                 </Col>
                 <Col md={4}>
                   <Form.Group>
-                    <Form.Label>Precio ($)</Form.Label>
+                    <Form.Label>Price ($)</Form.Label>
                     <Form.Control
                       type="number"
                       min={0.01}
@@ -176,10 +176,10 @@ export function AdminServicios() {
               </Row>
               <div className="d-flex gap-2 mt-3">
                 <Button type="submit" variant="primary" disabled={loadingForm}>
-                  {loadingForm ? 'Guardando...' : 'Guardar'}
+                  {loadingForm ? 'Saving...' : 'Save'}
                 </Button>
                 <Button type="button" variant="outline-secondary" onClick={cancelarForm}>
-                  Cancelar
+                  Cancel
                 </Button>
               </div>
             </Form>
@@ -189,15 +189,15 @@ export function AdminServicios() {
 
       {loading ? <Spinner animation="border" /> : (
         <>
-          <h5>Activos</h5>
+          <h5>Active</h5>
           <Table striped bordered hover responsive className="mb-4">
             <thead>
               <tr>
-                <th>Nombre</th>
-                <th>Tipo</th>
-                <th>Descripción</th>
-                <th>Duración</th>
-                <th>Precio</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Duration</th>
+                <th>Price</th>
                 <th></th>
               </tr>
             </thead>
@@ -210,28 +210,28 @@ export function AdminServicios() {
                   <td>{s.duracionMinutos} min</td>
                   <td>${s.precio}</td>
                   <td className="d-flex gap-2">
-                    <Button size="sm" variant="outline-secondary" onClick={() => abrirEditar(s)}>Editar</Button>
-                    <Button size="sm" variant="outline-danger" onClick={() => onDesactivar(s.id)}>Desactivar</Button>
+                    <Button size="sm" variant="outline-secondary" onClick={() => abrirEditar(s)}>Edit</Button>
+                    <Button size="sm" variant="outline-danger" onClick={() => onDesactivar(s.id)}>Deactivate</Button>
                   </td>
                 </tr>
               ))}
               {activos.length === 0 && (
-                <tr><td colSpan={6}>No hay servicios activos.</td></tr>
+                <tr><td colSpan={6}>No active services.</td></tr>
               )}
             </tbody>
           </Table>
 
           {desactivados.length > 0 && (
             <>
-              <h5>Desactivados</h5>
+              <h5>Inactive</h5>
               <Table striped bordered hover responsive>
                 <thead>
                   <tr>
-                    <th>Nombre</th>
-                    <th>Tipo</th>
-                    <th>Descripción</th>
-                    <th>Duración</th>
-                    <th>Precio</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Duration</th>
+                    <th>Price</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -244,7 +244,7 @@ export function AdminServicios() {
                       <td>{s.duracionMinutos} min</td>
                       <td>${s.precio}</td>
                       <td>
-                        <Button size="sm" variant="outline-success" onClick={() => onReactivar(s.id)}>Reactivar</Button>
+                        <Button size="sm" variant="outline-success" onClick={() => onReactivar(s.id)}>Reactivate</Button>
                       </td>
                     </tr>
                   ))}

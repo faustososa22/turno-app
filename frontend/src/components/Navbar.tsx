@@ -23,21 +23,21 @@ export function AppNavBar(){
                     <Nav className="me-auto">
                         {isAuthenticated && user?.rol == 'cliente' && (
                             <>
-                                <Nav.Link as={Link} to="/mis-turnos">Mis turnos</Nav.Link>
-                                <Nav.Link as={Link} to="/nuevo-turno">Nuevo turno</Nav.Link>
+                                <Nav.Link as={Link} to="/mis-turnos">My appointments</Nav.Link>
+                                <Nav.Link as={Link} to="/nuevo-turno">New appointment</Nav.Link>
                             </>
                         )}
 
                         {isAuthenticated && user?.rol === 'barbero' && (
-                            <Nav.Link as={Link} to="/turnos-barbero">Mis turnos</Nav.Link>
+                            <Nav.Link as={Link} to="/turnos-barbero">My appointments</Nav.Link>
                         )}
 
                         {isAuthenticated && user?.rol === 'admin' && (
                         <>
                             <Nav.Link as={Link} to="/admin">Dashboard</Nav.Link>
-                            <Nav.Link as={Link} to="/admin/barberos">Barberos</Nav.Link>
-                            <Nav.Link as={Link} to="/admin/servicios">Servicios</Nav.Link>
-                            <Nav.Link as={Link} to="/admin/horarios">Horarios</Nav.Link>
+                            <Nav.Link as={Link} to="/admin/barberos">Barbers</Nav.Link>
+                            <Nav.Link as={Link} to="/admin/servicios">Services</Nav.Link>
+                            <Nav.Link as={Link} to="/admin/horarios">Schedules</Nav.Link>
                         </>
                         )}
                     </Nav>
@@ -46,12 +46,12 @@ export function AppNavBar(){
                         {isAuthenticated ? (
                             <>
                                 <Navbar.Text>{user?.email}</Navbar.Text>
-                                <Button variant="outline-light" size="sm" onClick={handleLogout}>Salir</Button>
+                                <Button variant="outline-light" size="sm" onClick={handleLogout}>Logout</Button>
                             </>
                         ) : (
                             <>
                                 <Nav.Link as={Link} to="/login">Login</Nav.Link>
-                                <Nav.Link as={Link} to="/register">Registro</Nav.Link>
+                                <Nav.Link as={Link} to="/register">Register</Nav.Link>
                             </>
                         )}
                     </Nav>

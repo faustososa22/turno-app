@@ -18,7 +18,7 @@ export function ConfirmModal({ show, titulo, mensaje, labelConfirmar = 'Confirma
             <Modal.Body>{mensaje}</Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={onCancelar}>
-                    Volver
+                    Go back
                 </Button>
                 <Button variant="danger" onClick={onConfirmar}>
                     {labelConfirmar}

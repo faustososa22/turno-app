@@ -25,7 +25,7 @@ export function Register(){
             login(token)
             navigate('/')
         }catch(err: unknown){
-            const message = (err as {response?: {data?: {message?: string}}})?.response?.data?.message ?? 'No se pudo registrar'
+            const message = (err as {response?: {data?: {message?: string}}})?.response?.data?.message ?? 'Could not register'
             setError(message)
         } finally{
             setLoading(false)
@@ -38,18 +38,18 @@ export function Register(){
             <Col xs={12} sm={10} md={8} lg={5} xl={4}>
               <Card>
                 <Card.Body>
-                  <Card.Title className="mb-4">Crear cuenta</Card.Title>
+                  <Card.Title className="mb-4">Create account</Card.Title>
       
                   {error && <Alert variant="danger">{error}</Alert>}
       
                   <Form onSubmit={handleSubmit}>
                     <Form.Group className="mb-3" controlId="regNombre">
-                      <Form.Label>Nombre</Form.Label>
+                      <Form.Label>First name</Form.Label>
                       <Form.Control value={nombre} onChange={(e) => setNombre(e.target.value)} required />
                     </Form.Group>
       
                     <Form.Group className="mb-3" controlId="regApellido">
-                      <Form.Label>Apellido</Form.Label>
+                      <Form.Label>Last name</Form.Label>
                       <Form.Control value={apellido} onChange={(e) => setApellido(e.target.value)} required />
                     </Form.Group>
       
@@ -59,7 +59,7 @@ export function Register(){
                     </Form.Group>
       
                     <Form.Group className="mb-3" controlId="regPassword">
-                      <Form.Label>Contraseña</Form.Label>
+                      <Form.Label>Password</Form.Label>
                       <Form.Control
                         type="password"
                         value={password}
@@ -70,12 +70,12 @@ export function Register(){
                     </Form.Group>
       
                     <Button type="submit" variant="primary" disabled={loading} className="w-100">
-                      {loading ? <Spinner size="sm" animation="border" /> : 'Crear cuenta'}
+                      {loading ? <Spinner size="sm" animation="border" /> : 'Create account'}
                     </Button>
                   </Form>
       
                   <div className="mt-3 text-center">
-                    ¿Ya tenés cuenta? <Link to="/login">Iniciá sesión</Link>
+                    Already have an account? <Link to="/login">Sign in</Link>
                   </div>
                 </Card.Body>
               </Card>

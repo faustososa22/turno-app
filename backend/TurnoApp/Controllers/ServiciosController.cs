@@ -111,7 +111,7 @@ public class ServiciosController : ControllerBase
     {
         var servicioExiste = await context.Servicios.FindAsync(id);
         if (servicioExiste == null) return NotFound();
-        if (servicioExiste.Activo) return BadRequest("El servicio ya está activo.");
+        if (servicioExiste.Activo) return BadRequest("The service is already active.");
         servicioExiste.Activo = true;
         await context.SaveChangesAsync();
         return Ok(servicioExiste);

@@ -127,17 +127,17 @@ public class HorariosController : ControllerBase
         var barbero = await context.Barberos.FindAsync(dto.BarberoId);
 
         if (barbero == null)
-            return NotFound("Barbero no encontrado");
+            return NotFound("Barber not found");
 
         var horarioExiste = await context.HorariosDisponibles
             .AnyAsync(h => h.BarberoId == dto.BarberoId && h.DiaSemana == dto.DiaSemana &&
                            ((dto.HoraInicio >= h.HoraInicio && dto.HoraInicio < h.HoraFin) ||
                             (dto.HoraFin > h.HoraInicio && dto.HoraFin <= h.HoraFin)));
         if (horarioExiste)
-            return BadRequest("El horario ya existe para este barbero y día");
+            return BadRequest("A schedule already exists for this barber and day");
 
         if (dto.HoraInicio >= dto.HoraFin)
-            return BadRequest("La hora de inicio debe ser menor que la hora de fin");
+            return BadRequest("Start time must be earlier than end time");
 
         var horario = new HorarioDisponible
         {
@@ -159,7 +159,7 @@ public class HorariosController : ControllerBase
     public async Task<IActionResult> ActualizarHorario(int id, [FromBody] HorarioDisponibleDTO dto)
     {
         var horario = await context.HorariosDisponibles.FindAsync(id);
-        if (horario == null) return NotFound("Horario no encontrado");
+        if (horario == null) return NotFound("Schedule not found");
 
         if (dto.HoraInicio >= dto.HoraFin) return BadRequest("La hora de inicio debe ser menor que la hora de fin");
         horario.DiaSemana = dto.DiaSemana;
@@ -177,7 +177,7 @@ public class HorariosController : ControllerBase
     public async Task<IActionResult> EliminarHorario(int id)
     {
         var horario = await context.HorariosDisponibles.FindAsync(id);
-        if (horario == null) return NotFound("Horario no encontrado");
+        if (horario == null) return NotFound("Schedule not found");
 
         // En lugar de eliminar físicamente, marcamos como inactivo
         horario.Activo = false;

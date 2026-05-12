@@ -38,7 +38,7 @@ export function AdminBarberos() {
         setInactivos(i)
         setTodosServicios(s)
       } catch {
-        setError('No se pudieron cargar los barberos')
+        setError('Could not load barbers')
       } finally {
         setLoading(false)
       }
@@ -79,18 +79,18 @@ export function AdminBarberos() {
           telefono: form.telefono,
           fotoUrl: form.fotoUrl || undefined,
         })
-        setOk('Barbero actualizado correctamente')
+        setOk('Barber updated successfully')
       } else {
         await barberosService.crear({
           ...form,
           fotoUrl: form.fotoUrl || undefined,
         })
-        setOk('Barbero creado correctamente')
+        setOk('Barber created successfully')
       }
       cancelarForm()
       setRefresh(r => r + 1)
     } catch {
-      setError('No se pudo guardar el barbero')
+      setError('Could not save barber')
     } finally {
       setLoadingForm(false)
     }
@@ -102,7 +102,7 @@ export function AdminBarberos() {
       await barberosService.desactivar(id)
       setRefresh(r => r + 1)
     } catch {
-      setError('No se pudo desactivar el barbero')
+      setError('Could not deactivate barber')
     }
   }
 
@@ -112,7 +112,7 @@ export function AdminBarberos() {
       await barberosService.reactivar(id)
       setRefresh(r => r + 1)
     } catch {
-      setError('No se pudo reactivar el barbero')
+      setError('Could not reactivate barber')
     }
   }
 
@@ -127,7 +127,7 @@ export function AdminBarberos() {
       const data = await serviciosService.getByBarbero(barberoId)
       setServiciosDelBarbero(data.map(s => s.id))
     } catch {
-      setError('No se pudieron cargar los servicios del barbero')
+      setError('Could not load barber services')
     } finally {
       setLoadingServicios(false)
     }
@@ -143,16 +143,16 @@ export function AdminBarberos() {
         setServiciosDelBarbero(prev => [...prev, servicioId])
       }
     } catch {
-      setError('No se pudo actualizar el servicio')
+      setError('Could not update service')
     }
   }
 
   return (
     <Container fluid className="py-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2 className="mb-0">Barberos</h2>
+        <h2 className="mb-0">Barbers</h2>
         {!mostrarForm && (
-          <Button variant="primary" onClick={abrirCrear}>Nuevo barbero</Button>
+          <Button variant="primary" onClick={abrirCrear}>New barber</Button>
         )}
       </div>
 
@@ -162,33 +162,33 @@ export function AdminBarberos() {
       {mostrarForm && (
         <Card className="mb-4">
           <Card.Body>
-            <Card.Title>{editandoId ? 'Editar barbero' : 'Nuevo barbero'}</Card.Title>
+            <Card.Title>{editandoId ? 'Edit barber' : 'New barber'}</Card.Title>
             <Form onSubmit={handleSubmit}>
               <Row className="g-3">
                 <Col md={4}>
                   <Form.Group>
-                    <Form.Label>Nombre</Form.Label>
+                    <Form.Label>First name</Form.Label>
                     <Form.Control value={form.nombre} required
                       onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))} />
                   </Form.Group>
                 </Col>
                 <Col md={4}>
                   <Form.Group>
-                    <Form.Label>Apellido</Form.Label>
+                    <Form.Label>Last name</Form.Label>
                     <Form.Control value={form.apellido} required
                       onChange={e => setForm(f => ({ ...f, apellido: e.target.value }))} />
                   </Form.Group>
                 </Col>
                 <Col md={4}>
                   <Form.Group>
-                    <Form.Label>Teléfono</Form.Label>
+                    <Form.Label>Phone</Form.Label>
                     <Form.Control value={form.telefono} required
                       onChange={e => setForm(f => ({ ...f, telefono: e.target.value }))} />
                   </Form.Group>
                 </Col>
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label>URL de foto (opcional)</Form.Label>
+                    <Form.Label>Photo URL (optional)</Form.Label>
                     <Form.Control value={form.fotoUrl}
                       onChange={e => setForm(f => ({ ...f, fotoUrl: e.target.value }))} />
                   </Form.Group>
@@ -204,7 +204,7 @@ export function AdminBarberos() {
                     </Col>
                     <Col md={6}>
                       <Form.Group>
-                        <Form.Label>Contraseña</Form.Label>
+                        <Form.Label>Password</Form.Label>
                         <Form.Control type="password" value={form.password} required minLength={6}
                           onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
                       </Form.Group>
@@ -214,10 +214,10 @@ export function AdminBarberos() {
               </Row>
               <div className="d-flex gap-2 mt-3">
                 <Button type="submit" variant="primary" disabled={loadingForm}>
-                  {loadingForm ? 'Guardando...' : 'Guardar'}
+                  {loadingForm ? 'Saving...' : 'Save'}
                 </Button>
                 <Button type="button" variant="outline-secondary" onClick={cancelarForm}>
-                  Cancelar
+                  Cancel
                 </Button>
               </div>
             </Form>
@@ -227,13 +227,13 @@ export function AdminBarberos() {
 
       {loading ? <Spinner animation="border" /> : (
         <>
-          <h5>Activos</h5>
+          <h5>Active</h5>
           <Table striped bordered hover responsive className="mb-2">
             <thead>
               <tr>
-                <th>Nombre</th>
+                <th>Name</th>
                 <th>Email</th>
-                <th>Teléfono</th>
+                <th>Phone</th>
                 <th></th>
               </tr>
             </thead>
@@ -245,12 +245,12 @@ export function AdminBarberos() {
                     <td>{b.email}</td>
                     <td>{b.telefono}</td>
                     <td className="d-flex gap-2">
-                      <Button size="sm" variant="outline-secondary" onClick={() => abrirEditar(b)}>Editar</Button>
+                      <Button size="sm" variant="outline-secondary" onClick={() => abrirEditar(b)}>Edit</Button>
                       <Button size="sm" variant={gestionandoId === b.id ? 'secondary' : 'outline-primary'}
                         onClick={() => abrirServicios(b.id)}>
-                        Servicios
+                        Services
                       </Button>
-                      <Button size="sm" variant="outline-danger" onClick={() => onDesactivar(b.id)}>Desactivar</Button>
+                      <Button size="sm" variant="outline-danger" onClick={() => onDesactivar(b.id)}>Deactivate</Button>
                     </td>
                   </tr>
                   {gestionandoId === b.id && (
@@ -258,7 +258,7 @@ export function AdminBarberos() {
                       <td colSpan={4}>
                         {loadingServicios ? <Spinner animation="border" size="sm" /> : (
                           <div className="p-2">
-                            <strong className="d-block mb-2">Servicios de {b.nombre}:</strong>
+                            <strong className="d-block mb-2">Services for {b.nombre}:</strong>
                             <Row className="g-2">
                               {todosServicios.map(s => {
                                 const asignado = serviciosDelBarbero.includes(s.id)
@@ -274,7 +274,7 @@ export function AdminBarberos() {
                                   </Col>
                                 )
                               })}
-                              {todosServicios.length === 0 && <Col>No hay servicios disponibles.</Col>}
+                              {todosServicios.length === 0 && <Col>No services available.</Col>}
                             </Row>
                           </div>
                         )}
@@ -283,19 +283,19 @@ export function AdminBarberos() {
                   )}
                 </>
               ))}
-              {activos.length === 0 && <tr><td colSpan={4}>No hay barberos activos.</td></tr>}
+              {activos.length === 0 && <tr><td colSpan={4}>No active barbers.</td></tr>}
             </tbody>
           </Table>
 
           {inactivos.length > 0 && (
             <>
-              <h5 className="mt-4">Inactivos</h5>
+              <h5 className="mt-4">Inactive</h5>
               <Table striped bordered hover responsive>
                 <thead>
                   <tr>
-                    <th>Nombre</th>
+                    <th>Name</th>
                     <th>Email</th>
-                    <th>Teléfono</th>
+                    <th>Phone</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -306,7 +306,7 @@ export function AdminBarberos() {
                       <td>{b.email}</td>
                       <td>{b.telefono}</td>
                       <td>
-                        <Button size="sm" variant="outline-success" onClick={() => onReactivar(b.id)}>Reactivar</Button>
+                        <Button size="sm" variant="outline-success" onClick={() => onReactivar(b.id)}>Reactivate</Button>
                       </td>
                     </tr>
                   ))}

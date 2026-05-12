@@ -22,7 +22,7 @@ export function MisTurnos(){
             const data = await turnoService.getTurnosCliente(user.id, f || undefined)
             setTurnos(data)
         } catch {
-            setToast({ message: 'No se pudieron cargar tus turnos', variant: 'danger' })
+            setToast({ message: 'Could not load your appointments', variant: 'danger' })
         } finally {
             setLoading(false)
         }
@@ -37,9 +37,9 @@ export function MisTurnos(){
         try {
             await turnoService.cancelarTurno(turnoAConfirmar)
             await cargarTurnos(fecha)
-            setToast({ message: 'Turno cancelado', variant: 'danger' })
+            setToast({ message: 'Appointment cancelled', variant: 'danger' })
         } catch {
-            setToast({ message: 'No se pudo cancelar el turno', variant: 'danger' })
+            setToast({ message: 'Could not cancel the appointment', variant: 'danger' })
         } finally {
             setTurnoAConfirmar(null)
         }
@@ -56,18 +56,18 @@ export function MisTurnos(){
 
             <ConfirmModal
                 show={turnoAConfirmar !== null}
-                titulo="Cancelar turno"
-                mensaje="¿Seguro que querés cancelar este turno? Esta acción no se puede deshacer."
-                labelConfirmar="Sí, cancelar"
+                titulo="Cancel appointment"
+                mensaje="Are you sure you want to cancel this appointment? This action cannot be undone."
+                labelConfirmar="Yes, cancel"
                 onConfirmar={onCancelar}
                 onCancelar={() => setTurnoAConfirmar(null)}
             />
 
-            <h2 className="mb-3">Mis turnos</h2>
+            <h2 className="mb-3">My appointments</h2>
 
             <Row className="mb-3 align-items-end g-2">
                 <Col xs="auto">
-                    <Form.Label className="mb-1">Filtrar por fecha</Form.Label>
+                    <Form.Label className="mb-1">Filter by date</Form.Label>
                     <Form.Control
                         type="date"
                         value={fecha}
@@ -77,7 +77,7 @@ export function MisTurnos(){
                 {fecha && (
                     <Col xs="auto">
                         <Button variant="outline-secondary" onClick={() => setFecha('')}>
-                            Ver todos
+                            View all
                         </Button>
                     </Col>
                 )}
@@ -89,11 +89,11 @@ export function MisTurnos(){
                 <Table striped bordered hover responsive>
                     <thead>
                         <tr>
-                            <th>Fecha</th>
-                            <th>Barbero</th>
-                            <th>Servicio</th>
-                            <th>Estado</th>
-                            <th>Precio</th>
+                            <th>Date</th>
+                            <th>Barber</th>
+                            <th>Service</th>
+                            <th>Status</th>
+                            <th>Price</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -116,7 +116,7 @@ export function MisTurnos(){
                                         onClick={() => setTurnoAConfirmar(t.id)}
                                         disabled={t.estado === 'cancelado'}
                                     >
-                                        Cancelar
+                                        Cancel
                                     </Button>
                                 </td>
                             </tr>
@@ -124,7 +124,7 @@ export function MisTurnos(){
                         {turnos.length === 0 && (
                             <tr>
                                 <td colSpan={6}>
-                                    {fecha ? 'No hay turnos para esa fecha.' : 'No tenés turnos próximos.'}
+                                    {fecha ? 'No appointments for that date.' : 'You have no upcoming appointments.'}
                                 </td>
                             </tr>
                         )}

@@ -5,13 +5,13 @@ import { horariosService } from '../../services/horarios'
 import type { Barbero, HorarioDisponible } from '../../types'
 
 const DIAS = [
-  { value: 'Monday',    label: 'Lunes' },
-  { value: 'Tuesday',   label: 'Martes' },
-  { value: 'Wednesday', label: 'Miércoles' },
-  { value: 'Thursday',  label: 'Jueves' },
-  { value: 'Friday',    label: 'Viernes' },
-  { value: 'Saturday',  label: 'Sábado' },
-  { value: 'Sunday',    label: 'Domingo' },
+  { value: 'Monday',    label: 'Monday' },
+  { value: 'Tuesday',   label: 'Tuesday' },
+  { value: 'Wednesday', label: 'Wednesday' },
+  { value: 'Thursday',  label: 'Thursday' },
+  { value: 'Friday',    label: 'Friday' },
+  { value: 'Saturday',  label: 'Saturday' },
+  { value: 'Sunday',    label: 'Sunday' },
 ]
 
 const diaLabel = (value: string) => DIAS.find(d => d.value === value)?.label ?? value
@@ -43,7 +43,7 @@ export function AdminHorarios() {
         const data = await barberosService.getActivos()
         setBarberos(data)
       } catch {
-        setError('No se pudieron cargar los barberos')
+        setError('Could not load barbers')
       } finally {
         setLoadingBarberos(false)
       }
@@ -64,7 +64,7 @@ export function AdminHorarios() {
         const data = await horariosService.getByBarbero(Number(barberoId))
         setHorarios(data)
       } catch {
-        setError('No se pudieron cargar los horarios')
+        setError('Could not load schedules')
       } finally {
         setLoadingHorarios(false)
       }
@@ -111,15 +111,15 @@ export function AdminHorarios() {
     try {
       if (editandoId !== null) {
         await horariosService.actualizar(editandoId, payload)
-        setOk('Horario actualizado correctamente')
+        setOk('Schedule updated successfully')
       } else {
         await horariosService.crear(payload)
-        setOk('Horario creado correctamente')
+        setOk('Schedule created successfully')
       }
       cancelarForm()
       setRefresh(r => r + 1)
     } catch {
-      setError('No se pudo guardar el horario')
+      setError('Could not save schedule')
     } finally {
       setLoadingForm(false)
     }
@@ -131,13 +131,13 @@ export function AdminHorarios() {
       await horariosService.eliminar(id)
       setRefresh(r => r + 1)
     } catch {
-      setError('No se pudo eliminar el horario')
+      setError('Could not delete schedule')
     }
   }
 
   return (
     <Container fluid className="py-4">
-      <h2 className="mb-3">Horarios</h2>
+      <h2 className="mb-3">Schedules</h2>
 
       {error && <Alert variant="danger">{error}</Alert>}
       {ok && <Alert variant="success">{ok}</Alert>}
@@ -145,7 +145,7 @@ export function AdminHorarios() {
       <Card className="mb-4">
         <Card.Body>
           <Form.Group>
-            <Form.Label>Seleccioná un barbero</Form.Label>
+            <Form.Label>Select a barber</Form.Label>
             {loadingBarberos ? <Spinner animation="border" size="sm" /> : (
               <Form.Select
                 value={barberoId}
@@ -155,7 +155,7 @@ export function AdminHorarios() {
                   setOk(null)
                 }}
               >
-                <option value="">-- Seleccioná un barbero --</option>
+                <option value="">-- Select a barber --</option>
                 {barberos.map(b => (
                   <option key={b.id} value={b.id}>
                     {b.nombre} {b.apellido}
@@ -170,21 +170,21 @@ export function AdminHorarios() {
       {barberoId && (
         <>
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5 className="mb-0">Horarios del barbero</h5>
+            <h5 className="mb-0">Barber schedules</h5>
             {!mostrarForm && (
-              <Button variant="primary" onClick={abrirCrear}>Agregar horario</Button>
+              <Button variant="primary" onClick={abrirCrear}>Add schedule</Button>
             )}
           </div>
 
           {mostrarForm && (
             <Card className="mb-3">
               <Card.Body>
-                <Card.Title>{editandoId ? 'Editar horario' : 'Nuevo horario'}</Card.Title>
+                <Card.Title>{editandoId ? 'Edit schedule' : 'New schedule'}</Card.Title>
                 <Form onSubmit={handleSubmit}>
                   <Row className="g-3">
                     <Col md={4}>
                       <Form.Group>
-                        <Form.Label>Día de la semana</Form.Label>
+                        <Form.Label>Day of the week</Form.Label>
                         <Form.Select
                           value={form.diaSemana}
                           onChange={e => setForm(f => ({ ...f, diaSemana: e.target.value }))}
@@ -197,7 +197,7 @@ export function AdminHorarios() {
                     </Col>
                     <Col md={4}>
                       <Form.Group>
-                        <Form.Label>Hora inicio</Form.Label>
+                        <Form.Label>Start time</Form.Label>
                         <Form.Control
                           type="time"
                           value={form.horaInicio}
@@ -208,7 +208,7 @@ export function AdminHorarios() {
                     </Col>
                     <Col md={4}>
                       <Form.Group>
-                        <Form.Label>Hora fin</Form.Label>
+                        <Form.Label>End time</Form.Label>
                         <Form.Control
                           type="time"
                           value={form.horaFin}
@@ -220,10 +220,10 @@ export function AdminHorarios() {
                   </Row>
                   <div className="d-flex gap-2 mt-3">
                     <Button type="submit" variant="primary" disabled={loadingForm}>
-                      {loadingForm ? 'Guardando...' : 'Guardar'}
+                      {loadingForm ? 'Saving...' : 'Save'}
                     </Button>
                     <Button type="button" variant="outline-secondary" onClick={cancelarForm}>
-                      Cancelar
+                      Cancel
                     </Button>
                   </div>
                 </Form>
@@ -235,9 +235,9 @@ export function AdminHorarios() {
             <Table striped bordered hover responsive>
               <thead>
                 <tr>
-                  <th>Día</th>
-                  <th>Hora inicio</th>
-                  <th>Hora fin</th>
+                  <th>Day</th>
+                  <th>Start time</th>
+                  <th>End time</th>
                   <th></th>
                 </tr>
               </thead>
@@ -248,13 +248,13 @@ export function AdminHorarios() {
                     <td>{h.horaInicio.slice(0, 5)}</td>
                     <td>{h.horaFin.slice(0, 5)}</td>
                     <td className="d-flex gap-2">
-                      <Button size="sm" variant="outline-secondary" onClick={() => abrirEditar(h)}>Editar</Button>
-                      <Button size="sm" variant="outline-danger" onClick={() => onEliminar(h.id)}>Eliminar</Button>
+                      <Button size="sm" variant="outline-secondary" onClick={() => abrirEditar(h)}>Edit</Button>
+                      <Button size="sm" variant="outline-danger" onClick={() => onEliminar(h.id)}>Delete</Button>
                     </td>
                   </tr>
                 ))}
                 {horarios.length === 0 && (
-                  <tr><td colSpan={4}>Este barbero no tiene horarios cargados.</td></tr>
+                  <tr><td colSpan={4}>This barber has no schedules.</td></tr>
                 )}
               </tbody>
             </Table>
