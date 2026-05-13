@@ -13,11 +13,13 @@ public class TurnosController : ControllerBase
 {
     private readonly AppDbContext context;
     private readonly IConfiguration _config;
+    private readonly TurnoApp.Services.EmailService _email;
 
-    public TurnosController(AppDbContext context, IConfiguration config)
+    public TurnosController(AppDbContext context, IConfiguration config, TurnoApp.Services.EmailService email)
     {
         this.context = context;
         this._config = config;
+        this._email = email;
     }
 
     private int GetUserId()
@@ -229,6 +231,17 @@ public class TurnosController : ControllerBase
 
         await context.SaveChangesAsync();
 
+        // Send booking confirmation email
+        var cliente = await context.Usuarios.FindAsync(usuarioId);
+        var barbero = await context.Barberos.FindAsync(dto.BarberoId);
+        if (cliente != null && barbero != null)
+        {
+            var serviceNames = string.Join(", ", servicios.Select(s => s.Nombre));
+            await _email.SendBookingConfirmationAsync(
+                cliente.Email, cliente.Nombre, $"{barbero.Nombre} {barbero.Apellido}",
+                serviceNames, nuevoTurno.FechaHora, precioTotal);
+        }
+
         return CreatedAtAction(nameof(GetTurnos), new { id = nuevoTurno.Id }, new
         {
             nuevoTurno.Id,
@@ -274,6 +287,14 @@ public class TurnosController : ControllerBase
 
         turno.Estado = "cancelado";
         await context.SaveChangesAsync();
+
+        // Send cancellation email
+        var emailCliente = await context.Usuarios.FindAsync(turno.UsuarioId);
+        var emailBarbero = await context.Barberos.FindAsync(turno.BarberoId);
+        if (emailCliente != null && emailBarbero != null)
+            await _email.SendCancellationAsync(
+                emailCliente.Email, emailCliente.Nombre, $"{emailBarbero.Nombre} {emailBarbero.Apellido}", turno.FechaHora);
+
         return NoContent();
     }
 
@@ -323,6 +344,19 @@ public class TurnosController : ControllerBase
 
       turno.Estado = "confirmado";
       await context.SaveChangesAsync();
+
+      // Send confirmation email
+      var emailCliente = await context.Usuarios.FindAsync(turno.UsuarioId);
+      var emailBarbero = await context.Barberos.FindAsync(turno.BarberoId);
+      var emailServicios = await context.TurnoServicios
+          .Where(ts => ts.TurnoId == turno.Id)
+          .Select(ts => ts.Servicio.Nombre)
+          .ToListAsync();
+      if (emailCliente != null && emailBarbero != null)
+          await _email.SendAppointmentConfirmedAsync(
+              emailCliente.Email, emailCliente.Nombre, $"{emailBarbero.Nombre} {emailBarbero.Apellido}",
+              string.Join(", ", emailServicios), turno.FechaHora);
+
       return Ok(new { turno.Id, turno.Estado });
   }
 

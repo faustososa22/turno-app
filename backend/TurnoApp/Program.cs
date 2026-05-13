@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
+using Resend;
+
 var builder = WebApplication.CreateBuilder(args);
 
 //deserializar json
@@ -20,6 +22,16 @@ builder.Services.AddOpenApi(options =>
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
 });
 
+
+// Resend email service
+builder.Services.AddOptions();
+builder.Services.AddHttpClient<ResendClient>();
+builder.Services.Configure<ResendClientOptions>(o =>
+{
+    o.ApiToken = builder.Configuration["Resend:ApiKey"] ?? "";
+});
+builder.Services.AddTransient<IResend, ResendClient>();
+builder.Services.AddScoped<TurnoApp.Services.EmailService>();
 
 // Registrar DbContext con PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
