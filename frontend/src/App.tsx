@@ -12,11 +12,13 @@ import { AdminServicios } from './pages/admin/AdminServicios'
 import { AdminBarberos } from './pages/admin/AdminBarberos'
 import { AdminHorarios } from './pages/admin/AdminHorarios'
 import { NuevoTurno } from './pages/NuevoTurno'
+import { ChatBot } from './components/ChatBot'
 
 function App() {
   return(
     <>
     <AppNavBar/>
+    <ChatBot />
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />

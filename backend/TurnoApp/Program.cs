@@ -43,7 +43,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 var allowedOrigins = builder.Configuration["AllowedOrigins"]?.Split(',')
-    ?? ["http://localhost:5173"];
+    ?? ["http://localhost:5173", "http://localhost:5174"];
 
 builder.Services.AddCors(options =>
 {
