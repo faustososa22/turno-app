@@ -19,6 +19,11 @@ public class ChatController : ControllerBase
     private readonly AppDbContext _context;
     private readonly IConfiguration _config;
 
+    // Rate limiting: max 10 requests per user per hour
+    private static readonly Dictionary<int, List<DateTime>> _requestLog = new();
+    private static readonly object _lock = new();
+    private const int MaxRequestsPerHour = 15;
+
     public ChatController(AppDbContext context, IConfiguration config)
     {
         _context = context;
@@ -32,9 +37,33 @@ public class ChatController : ControllerBase
         return claim != null ? int.Parse(claim.Value) : 0;
     }
 
+    private bool IsRateLimited(int userId)
+    {
+        var now = DateTime.UtcNow;
+        var oneHourAgo = now.AddHours(-1);
+        lock (_lock)
+        {
+            if (!_requestLog.ContainsKey(userId))
+                _requestLog[userId] = new List<DateTime>();
+
+            // Remove requests older than 1 hour
+            _requestLog[userId].RemoveAll(t => t < oneHourAgo);
+
+            if (_requestLog[userId].Count >= MaxRequestsPerHour)
+                return true;
+
+            _requestLog[userId].Add(now);
+            return false;
+        }
+    }
+
     [HttpPost]
     public async Task<IActionResult> Chat([FromBody] ChatRequestDTO dto)
     {
+        var userId = GetUserId();
+        if (IsRateLimited(userId))
+            return StatusCode(429, new { message = "Too many requests. Please wait before sending more messages." });
+
         var apiKey = _config["Anthropic:ApiKey"];
         if (string.IsNullOrEmpty(apiKey))
             return StatusCode(503, new { message = "Chat service not configured" });
