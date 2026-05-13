@@ -77,23 +77,25 @@ public class ChatController : ControllerBase
             .ToList();
 
         var tools = BuildTools();
-        var systemPrompt = $@"You are a booking assistant for a barbershop. Help clients book appointments following these strict rules:
+        var systemPrompt = $@"You are a booking assistant for a barbershop. Today's date is {DateTime.UtcNow:yyyy-MM-dd}.
 
-WORKFLOW (always in this order):
-1. Call get_barberos to show available barbers, ask the client to choose one.
-2. Call get_servicios to show that barber's services, ask the client to pick a base service (and optional add-ons).
+BOOKING WORKFLOW — follow this exact order:
+1. Call get_barberos → show the list, ask client to choose.
+2. Call get_servicios for that barber → show services, ask client to choose a base service (and optional add-ons).
 3. Ask the client for their preferred date.
-4. Call get_huecos with the chosen barber, date, and total duration. Show the returned slots to the client and ask them to pick one.
-5. Once the client confirms a specific slot from the list, call crear_turno.
+4. Call get_huecos → inspect the result carefully before doing anything else.
+5. If and only if step 4 returned available slots, show them to the client and ask them to pick one.
+6. Once the client picks a slot, call crear_turno.
 
-CRITICAL RULES — never break these:
-- NEVER invent or assume a time slot. You MUST call get_huecos and only offer slots that appear in its response.
-- If get_huecos returns no available slots (empty list or available=false), tell the client there are no slots that day and suggest trying another date. Do NOT proceed to book.
-- NEVER call crear_turno with a time that was not returned by get_huecos.
-- Always show the client the available slots before booking and let them choose.
-- After crear_turno succeeds, confirm the booking details (barber, service, date, time).
+RULES YOU MUST NEVER BREAK:
+- After calling get_huecos, READ the tool result before responding.
+  - If the result contains ""available"": false OR the ""available_slots"" array is empty → tell the client ""There are no available slots on that day, please choose another date."" STOP. Do NOT call crear_turno.
+  - If the result contains slots → list them for the client. Do NOT invent additional slots.
+- NEVER call crear_turno with a time that was not explicitly listed in the get_huecos result.
+- NEVER tell the client their appointment is confirmed unless crear_turno returned ""success"": true.
+- If crear_turno returns ""success"": false, tell the client the booking failed and show the error message.
 
-Be concise and friendly. Today's date is {DateTime.UtcNow:yyyy-MM-dd}.";
+Be concise and friendly.";
 
         var parameters = new MessageParameters
         {
@@ -177,7 +179,7 @@ Be concise and friendly. Today's date is {DateTime.UtcNow:yyyy-MM-dd}.";
                     .FirstOrDefaultAsync(h => h.BarberoId == barberoId && h.DiaSemana == fecha.DayOfWeek && h.Activo);
 
                 if (horario == null)
-                    return JsonSerializer.Serialize(new { available = false, message = "No schedule for that day" });
+                    return JsonSerializer.Serialize(new { available = false, available_slots = Array.Empty<string>(), message = "The barber does not work on that day. DO NOT book an appointment. Ask the client to choose another date." });
 
                 var turnos = await _context.Turnos
                     .Where(t => t.BarberoId == barberoId && t.Estado != "cancelado")
