@@ -2,7 +2,7 @@
 
 A full-stack web application for managing barbershop appointments. Clients book online, barbers manage their schedule, and admins have full control over the business.
 
-**Live demo:** https://turno-fp6pz1h9g-fausto-s-projects22.vercel.app
+**Live demo:** https://turno-app-navy.vercel.app/
 
 ## Tech Stack
 
