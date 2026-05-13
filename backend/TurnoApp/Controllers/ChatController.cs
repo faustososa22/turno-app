@@ -88,12 +88,14 @@ BOOKING WORKFLOW — follow this exact order:
 6. Once the client picks a slot, call crear_turno.
 
 RULES YOU MUST NEVER BREAK:
-- After calling get_huecos, READ the tool result before responding.
-  - If the result contains ""available"": false OR the ""available_slots"" array is empty → tell the client ""There are no available slots on that day, please choose another date."" STOP. Do NOT call crear_turno.
-  - If the result contains slots → list them for the client. Do NOT invent additional slots.
-- NEVER call crear_turno with a time that was not explicitly listed in the get_huecos result.
+- After calling get_huecos, READ the tool result carefully:
+  - The result always includes ""actual_date"" and ""actual_day_of_week"" — these are the REAL values from the server. Use them, not your own calculation.
+  - If ""available_slots"" is empty OR ""available"" is false → tell the client there are no slots on that day (use actual_day_of_week from the result) and ask them to pick another date. STOP. Do NOT call crear_turno.
+  - If ""available_slots"" has times → show them to the client. Do NOT invent slots.
+- When passing ""fecha_hora"" to crear_turno, use the ""actual_date"" from get_huecos plus the time the client chose. Example: if actual_date is ""2026-05-19"" and client chose ""10:00"", pass ""2026-05-19T10:00:00"".
+- NEVER call crear_turno unless get_huecos returned at least one slot in ""available_slots"".
 - NEVER tell the client their appointment is confirmed unless crear_turno returned ""success"": true.
-- If crear_turno returns ""success"": false, tell the client the booking failed and show the error message.
+- If crear_turno returns ""success"": false, tell the client the booking failed and show the error.
 
 Be concise and friendly.";
 
@@ -178,8 +180,17 @@ Be concise and friendly.";
                 var horario = await _context.HorariosDisponibles
                     .FirstOrDefaultAsync(h => h.BarberoId == barberoId && h.DiaSemana == fecha.DayOfWeek && h.Activo);
 
+                var actualDayName = fecha.DayOfWeek.ToString();
+
                 if (horario == null)
-                    return JsonSerializer.Serialize(new { available = false, available_slots = Array.Empty<string>(), message = "The barber does not work on that day. DO NOT book an appointment. Ask the client to choose another date." });
+                    return JsonSerializer.Serialize(new
+                    {
+                        available = false,
+                        available_slots = Array.Empty<string>(),
+                        actual_date = fecha.ToString("yyyy-MM-dd"),
+                        actual_day_of_week = actualDayName,
+                        message = $"The barber does not work on {actualDayName}s. available_slots is empty. DO NOT book. Tell the client there are no slots on {actualDayName} {fecha:yyyy-MM-dd} and ask them to pick another date."
+                    });
 
                 var turnos = await _context.Turnos
                     .Where(t => t.BarberoId == barberoId && t.Estado != "cancelado")
@@ -197,7 +208,12 @@ Be concise and friendly.";
                     if (disponible) huecos.Add(hora.ToString("HH:mm"));
                     hora = hora.AddMinutes(15);
                 }
-                return JsonSerializer.Serialize(new { available_slots = huecos });
+                return JsonSerializer.Serialize(new
+                {
+                    available_slots = huecos,
+                    actual_date = fecha.ToString("yyyy-MM-dd"),
+                    actual_day_of_week = actualDayName
+                });
             }
 
             case "crear_turno":
