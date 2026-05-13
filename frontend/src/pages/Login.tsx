@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import { useState } from "react";
 import { authService } from "../services/auth";
+import { jwtDecode } from "jwt-decode";
 import { Alert, Button, Card, Col, Container, Form, Row, Spinner } from "react-bootstrap";
 
 export function Login(){
@@ -21,7 +22,11 @@ export function Login(){
         try{
             const {token} = await authService.login({email, password})
             login(token)
-            navigate('/')
+            const decoded = jwtDecode<Record<string, string>>(token)
+            const role = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ?? decoded['role']
+            if (role === 'admin') navigate('/admin')
+            else if (role === 'barbero') navigate('/turnos-barbero')
+            else navigate('/home')
         }catch (err: unknown){
             const message =
                 (err as {response?: {data?: {message?: string}}}).response?.data?.message ?? 'Could not sign in'
