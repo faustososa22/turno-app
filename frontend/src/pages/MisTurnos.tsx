@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../auth/useAuth";
 import type { Turno } from "../types";
 import { turnoService } from "../services/turnos";
-import { Badge, Button, Col, Container, Form, Row, Spinner, Table } from "react-bootstrap";
+import { Badge, Button, Card, Col, Container, Form, Row, Spinner, Table } from "react-bootstrap";
 import { AppToast } from "../components/AppToast";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { estadoVariant } from "../utils/badges";
+import { useNavigate } from "react-router-dom";
 
 export function MisTurnos(){
     const {user} = useAuth()
+    const navigate = useNavigate()
     const [turnos, setTurnos] = useState<Turno[]>([])
     const [loading, setLoading] = useState(true)
     const [fecha, setFecha] = useState('')
@@ -46,14 +48,13 @@ export function MisTurnos(){
     }
 
     return(
-        <Container fluid className="py-4">
+        <div style={{ background: '#f8f9fa', minHeight: '100vh' }}>
             <AppToast
                 show={toast !== null}
                 message={toast?.message ?? ''}
                 variant={toast?.variant}
                 onClose={() => setToast(null)}
             />
-
             <ConfirmModal
                 show={turnoAConfirmar !== null}
                 titulo="Cancel appointment"
@@ -63,74 +64,85 @@ export function MisTurnos(){
                 onCancelar={() => setTurnoAConfirmar(null)}
             />
 
-            <h2 className="mb-3">My appointments</h2>
+            {/* Header */}
+            <div style={{
+                background: 'linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)',
+                color: 'white',
+                padding: '40px 0 64px',
+            }}>
+                <Container fluid className="px-4">
+                    <p className="text-white-50 mb-1" style={{ fontSize: '14px' }}>My account</p>
+                    <h2 className="fw-bold mb-0">My appointments</h2>
+                </Container>
+            </div>
 
-            <Row className="mb-3 align-items-end g-2">
-                <Col xs="auto">
-                    <Form.Label className="mb-1">Filter by date</Form.Label>
-                    <Form.Control
-                        type="date"
-                        value={fecha}
-                        onChange={e => setFecha(e.target.value)}
-                    />
-                </Col>
-                {fecha && (
-                    <Col xs="auto">
-                        <Button variant="outline-secondary" onClick={() => setFecha('')}>
-                            View all
-                        </Button>
-                    </Col>
-                )}
-            </Row>
+            <Container fluid className="px-4" style={{ marginTop: '-32px' }}>
+                <Card className="border-0 shadow-sm">
+                    <Card.Body className="p-0">
+                        <div className="px-4 py-3 border-bottom d-flex align-items-center gap-3 flex-wrap">
+                            <Form.Control
+                                type="date"
+                                value={fecha}
+                                onChange={e => setFecha(e.target.value)}
+                                style={{ maxWidth: '200px' }}
+                            />
+                            {fecha && (
+                                <Button variant="outline-secondary" size="sm" onClick={() => setFecha('')}>Clear</Button>
+                            )}
+                            <Button variant="primary" size="sm" className="ms-auto" onClick={() => navigate('/nuevo-turno')}>
+                                + Book appointment
+                            </Button>
+                        </div>
 
-            {loading ? (
-                <Spinner animation="border"/>
-            ): (
-                <Table striped bordered hover responsive>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Barber</th>
-                            <th>Service</th>
-                            <th>Status</th>
-                            <th>Price</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {turnos.map((t) => (
-                            <tr key={t.id}>
-                                <td>{new Date(t.fechaHora).toLocaleString()}</td>
-                                <td>{t.barbero}</td>
-                                <td>{t.servicios && t.servicios.length > 0 ? t.servicios.join(', ') : t.servicio}</td>
-                                <td>
-                                    <Badge bg={estadoVariant(t.estado)} className="text-capitalize">
-                                        {t.estado}
-                                    </Badge>
-                                </td>
-                                <td>${t.precioTotal ?? '-'}</td>
-                                <td>
-                                    <Button
-                                        size="sm"
-                                        variant="outline-danger"
-                                        onClick={() => setTurnoAConfirmar(t.id)}
-                                        disabled={t.estado === 'cancelado'}
-                                    >
-                                        Cancel
-                                    </Button>
-                                </td>
-                            </tr>
-                        ))}
-                        {turnos.length === 0 && (
-                            <tr>
-                                <td colSpan={6}>
-                                    {fecha ? 'No appointments for that date.' : 'You have no upcoming appointments.'}
-                                </td>
-                            </tr>
+                        {loading ? (
+                            <div className="text-center py-5"><Spinner animation="border" /></div>
+                        ) : (
+                            <Table hover responsive className="mb-0">
+                                <thead style={{ background: '#f8f9fa' }}>
+                                    <tr>
+                                        <th className="px-4 py-3 fw-semibold text-muted border-0" style={{ fontSize: '13px' }}>Date</th>
+                                        <th className="py-3 fw-semibold text-muted border-0" style={{ fontSize: '13px' }}>Barber</th>
+                                        <th className="py-3 fw-semibold text-muted border-0" style={{ fontSize: '13px' }}>Service</th>
+                                        <th className="py-3 fw-semibold text-muted border-0" style={{ fontSize: '13px' }}>Status</th>
+                                        <th className="py-3 fw-semibold text-muted border-0" style={{ fontSize: '13px' }}>Price</th>
+                                        <th className="py-3 border-0"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {turnos.map((t) => (
+                                        <tr key={t.id} style={{ verticalAlign: 'middle' }}>
+                                            <td className="px-4 py-3" style={{ fontSize: '14px' }}>
+                                                {new Date(t.fechaHora).toLocaleString('en-US', {
+                                                    month: 'short', day: 'numeric',
+                                                    hour: '2-digit', minute: '2-digit'
+                                                })}
+                                            </td>
+                                            <td className="py-3" style={{ fontSize: '14px' }}>{t.barbero}</td>
+                                            <td className="py-3" style={{ fontSize: '14px' }}>{t.servicios && t.servicios.length > 0 ? t.servicios.join(', ') : t.servicio}</td>
+                                            <td className="py-3">
+                                                <Badge bg={estadoVariant(t.estado)} className="text-capitalize" style={{ fontSize: '12px' }}>{t.estado}</Badge>
+                                            </td>
+                                            <td className="py-3 fw-semibold" style={{ fontSize: '14px' }}>${t.precioTotal ?? '-'}</td>
+                                            <td className="py-3">
+                                                <Button size="sm" variant="outline-danger"
+                                                    onClick={() => setTurnoAConfirmar(t.id)}
+                                                    disabled={t.estado === 'cancelado'}>
+                                                    Cancel
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {turnos.length === 0 && (
+                                        <tr><td colSpan={6} className="text-center py-5 text-muted">
+                                            {fecha ? 'No appointments for that date.' : 'You have no upcoming appointments.'}
+                                        </td></tr>
+                                    )}
+                                </tbody>
+                            </Table>
                         )}
-                    </tbody>
-                </Table>
-            )}
-        </Container>
+                    </Card.Body>
+                </Card>
+            </Container>
+        </div>
     )
 }

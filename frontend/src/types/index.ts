@@ -15,6 +15,7 @@ export interface AuthUser {
   id: number
   email: string
   rol: Rol
+  nombre: string
 }
 
 export interface LoginRequest {

@@ -13,6 +13,7 @@ import { AdminBarberos } from './pages/admin/AdminBarberos'
 import { AdminHorarios } from './pages/admin/AdminHorarios'
 import { NuevoTurno } from './pages/NuevoTurno'
 import { ChatBot } from './components/ChatBot'
+import { ClientHome } from './pages/ClientHome'
 
 function App() {
   return(
@@ -25,6 +26,7 @@ function App() {
       <Route path="/register" element={<Register />} />
 
       <Route element={<ProtectedRoute />}>
+        <Route path="/home" element={<ClientHome />} />
         <Route path="/mis-turnos" element={<MisTurnos/>} />
         <Route path="/nuevo-turno" element={<NuevoTurno/>} />
         <Route path="/turnos-barbero" element={<TurnosBarbero/>} />

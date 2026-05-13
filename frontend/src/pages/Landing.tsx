@@ -9,7 +9,7 @@ export function Landing() {
     if (user) {
         if (user.rol === 'admin') return <Navigate to="/admin" replace />
         if (user.rol === 'barbero') return <Navigate to="/turnos-barbero" replace />
-        return <Navigate to="/mis-turnos" replace />
+        return <Navigate to="/home" replace />
     }
 
     return (

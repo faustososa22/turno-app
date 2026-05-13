@@ -28,6 +28,10 @@ function mapTokenToUser(token: string): AuthUser | null {
       decoded.role ??
       decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
 
+    const rawNombre =
+      decoded.given_name ??
+      decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname']
+
     const id = Number(rawId)
 
     if (!id || Number.isNaN(id) || !rawEmail) return null
@@ -36,6 +40,7 @@ function mapTokenToUser(token: string): AuthUser | null {
       id,
       email: String(rawEmail),
       rol: normalizeRole(rawRole),
+      nombre: rawNombre ? String(rawNombre) : '',
     }
   } catch {
     return null

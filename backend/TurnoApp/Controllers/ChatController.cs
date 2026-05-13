@@ -77,7 +77,23 @@ public class ChatController : ControllerBase
             .ToList();
 
         var tools = BuildTools();
-        var systemPrompt = $"You are a helpful assistant for a barbershop booking system. Help clients book appointments step by step: first ask which barber they prefer, then which service, then which date, then show available time slots and confirm. Always use the available tools to get real data. Be concise and friendly. Today's date is {DateTime.UtcNow:yyyy-MM-dd}.";
+        var systemPrompt = $@"You are a booking assistant for a barbershop. Help clients book appointments following these strict rules:
+
+WORKFLOW (always in this order):
+1. Call get_barberos to show available barbers, ask the client to choose one.
+2. Call get_servicios to show that barber's services, ask the client to pick a base service (and optional add-ons).
+3. Ask the client for their preferred date.
+4. Call get_huecos with the chosen barber, date, and total duration. Show the returned slots to the client and ask them to pick one.
+5. Once the client confirms a specific slot from the list, call crear_turno.
+
+CRITICAL RULES — never break these:
+- NEVER invent or assume a time slot. You MUST call get_huecos and only offer slots that appear in its response.
+- If get_huecos returns no available slots (empty list or available=false), tell the client there are no slots that day and suggest trying another date. Do NOT proceed to book.
+- NEVER call crear_turno with a time that was not returned by get_huecos.
+- Always show the client the available slots before booking and let them choose.
+- After crear_turno succeeds, confirm the booking details (barber, service, date, time).
+
+Be concise and friendly. Today's date is {DateTime.UtcNow:yyyy-MM-dd}.";
 
         var parameters = new MessageParameters
         {
@@ -201,14 +217,37 @@ public class ChatController : ControllerBase
                     .ToListAsync();
 
                 var tz = TimeZoneInfo.FindSystemTimeZoneById(_config["Barberia:TimeZone"]!);
-                var fechaUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.Parse(fechaHoraStr), tz);
+                var fechaLocal = DateTime.Parse(fechaHoraStr);
+                var fechaUtc = TimeZoneInfo.ConvertTimeToUtc(fechaLocal, tz);
                 var totalMin = servicios.Sum(s => s.DuracionMinutos);
                 var totalPrecio = servicios.Sum(s => s.Precio);
+                var fechaFinUtc = fechaUtc.AddMinutes(totalMin);
+
+                // Validate: barber has a schedule for this day
+                var horario = await _context.HorariosDisponibles
+                    .FirstOrDefaultAsync(h => h.BarberoId == barberoId && h.DiaSemana == fechaLocal.DayOfWeek && h.Activo);
+
+                if (horario == null)
+                    return JsonSerializer.Serialize(new { success = false, error = "The barber has no schedule on that day. Cannot create the appointment." });
+
+                // Validate: slot fits within the schedule block
+                var slotTime = new TimeOnly(fechaLocal.Hour, fechaLocal.Minute);
+                var slotEnd = slotTime.AddMinutes(totalMin);
+                if (slotTime < horario.HoraInicio || slotEnd > horario.HoraFin)
+                    return JsonSerializer.Serialize(new { success = false, error = "The requested time slot is outside the barber's working hours." });
+
+                // Validate: no conflict with existing appointments
+                var conflict = await _context.Turnos
+                    .AnyAsync(t => t.BarberoId == barberoId && t.Estado != "cancelado"
+                                   && t.FechaHora < fechaFinUtc && t.FechaHoraFin > fechaUtc);
+
+                if (conflict)
+                    return JsonSerializer.Serialize(new { success = false, error = "That time slot is no longer available. Please choose another." });
 
                 var turno = new TurnoApp.Models.Turno
                 {
                     FechaHora = fechaUtc,
-                    FechaHoraFin = fechaUtc.AddMinutes(totalMin),
+                    FechaHoraFin = fechaFinUtc,
                     BarberoId = barberoId,
                     UsuarioId = usuarioId,
                     ServicioId = servicioBaseId,
