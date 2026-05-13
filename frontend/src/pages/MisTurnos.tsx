@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../auth/useAuth";
 import type { Turno } from "../types";
 import { turnoService } from "../services/turnos";
-import { Badge, Button, Card, Col, Container, Form, Row, Spinner, Table } from "react-bootstrap";
+import { Badge, Button, Card, Container, Form, Spinner, Table } from "react-bootstrap";
 import { AppToast } from "../components/AppToast";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { estadoVariant } from "../utils/badges";
