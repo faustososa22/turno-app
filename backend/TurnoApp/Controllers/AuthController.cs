@@ -39,9 +39,9 @@ public class AuthController : ControllerBase
             Email = dto.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
         };
-        var token = GenerarToken(usuario);
         context.Usuarios.Add(usuario);
         await context.SaveChangesAsync();
+        var token = GenerarToken(usuario);
         return Ok(new { token });
     }
     
