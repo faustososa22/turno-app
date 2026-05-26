@@ -93,5 +93,5 @@ using (var scope = app.Services.CreateScope())
     await db.Database.MigrateAsync();
     await DbInitializer.SeedAsync(db);
 }
-app.MapGet("/health", () => Results.Ok("healthy"));
+app.Map("/health", () => Results.Ok("healthy"));
 app.Run();
