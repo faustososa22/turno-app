@@ -1,124 +1,143 @@
 import { useAuth } from '../auth/useAuth'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { Button, Card, Col, Container, Row } from 'react-bootstrap'
+import { Button, Col, Container, Row } from 'react-bootstrap'
 
 export function Landing() {
-    const { user } = useAuth()
-    const navigate = useNavigate()
+  const { user } = useAuth()
+  const navigate = useNavigate()
 
-    if (user) {
-        if (user.rol === 'admin') return <Navigate to="/admin" replace />
-        if (user.rol === 'barbero') return <Navigate to="/turnos-barbero" replace />
-        return <Navigate to="/home" replace />
-    }
+  if (user) {
+    if (user.rol === 'admin') return <Navigate to="/admin" replace />
+    if (user.rol === 'barbero') return <Navigate to="/turnos-barbero" replace />
+    return <Navigate to="/home" replace />
+  }
 
-    return (
-        <>
-            {/* Hero */}
-            <div
-                className="d-flex align-items-center text-white"
-                style={{
-                    background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%)',
-                    minHeight: '92vh',
+  return (
+    <div style={{ background: 'var(--bg)', color: 'var(--text)' }}>
+
+      {/* Hero */}
+      <div style={{
+        minHeight: '92vh',
+        display: 'flex',
+        alignItems: 'center',
+        background: 'radial-gradient(ellipse at 60% 50%, rgba(201,168,76,0.07) 0%, transparent 70%)',
+        borderBottom: '1px solid var(--border)',
+      }}>
+        <Container className="py-5">
+          <Row className="justify-content-center text-center">
+            <Col lg={8}>
+              <p style={{ color: 'var(--gold)', fontSize: '12px', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '24px' }}>
+                Premium Barbershop Booking
+              </p>
+              <h1 style={{
+                fontFamily: 'Playfair Display, serif',
+                fontSize: 'clamp(2.8rem, 7vw, 5rem)',
+                fontWeight: 700,
+                lineHeight: 1.1,
+                marginBottom: '24px',
+                color: 'var(--text)',
+              }}>
+                Your next haircut,<br />
+                <span style={{ color: 'var(--gold)' }}>one click away.</span>
+              </h1>
+              <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginBottom: '40px', maxWidth: '500px', margin: '0 auto 40px' }}>
+                Book online, choose your barber, and forget about waiting.
+              </p>
+              <div className="d-flex gap-3 justify-content-center flex-wrap">
+                <Button
+                  size="lg"
+                  variant="primary"
+                  className="px-5"
+                  style={{ fontWeight: 700, letterSpacing: '0.03em' }}
+                  onClick={() => navigate('/register')}
+                >
+                  Book appointment
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline-light"
+                  className="px-5"
+                  onClick={() => navigate('/login')}
+                >
+                  Sign in
+                </Button>
+              </div>
+            </Col>
+          </Row>
+        </Container>
+      </div>
+
+      {/* How it works */}
+      <div style={{ borderBottom: '1px solid var(--border)', padding: '80px 0' }}>
+        <Container>
+          <div className="text-center mb-5">
+            <p style={{ color: 'var(--gold)', fontSize: '12px', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '12px' }}>
+              How it works
+            </p>
+            <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '2.2rem', marginBottom: '8px' }}>
+              Three steps and done.
+            </h2>
+          </div>
+          <Row className="g-4">
+            {[
+              { num: '01', title: 'Book online', text: 'Choose the day and time that works best for you, from anywhere. No calls, no messages.' },
+              { num: '02', title: 'Choose your barber', text: 'Select your trusted barber and the services you want, including add-ons like beard or eyebrows.' },
+              { num: '03', title: 'No waiting', text: 'Show up at your time and you\'re done. No lines, no surprises. The barber already knows you\'re coming.' },
+            ].map(item => (
+              <Col md={4} key={item.num}>
+                <div style={{
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '12px',
+                  padding: '32px',
+                  height: '100%',
+                  transition: 'border-color 0.2s',
                 }}
-            >
-                <Container className="py-5 text-center">
-                    <h1 className="display-2 fw-bold mb-3">BarberShop</h1>
-                    <p className="lead fs-4 mb-2 text-white-50">
-                        Your next haircut, one click away.
-                    </p>
-                    <p className="mb-5 text-white-50">
-                        Book online, choose your barber, and forget about waiting.
-                    </p>
-                    <div className="d-flex gap-3 justify-content-center flex-wrap">
-                        <Button
-                            size="lg"
-                            variant="light"
-                            className="px-5 fw-semibold"
-                            onClick={() => navigate('/register')}
-                        >
-                            Book appointment
-                        </Button>
-                        <Button
-                            size="lg"
-                            variant="outline-light"
-                            className="px-5"
-                            onClick={() => navigate('/login')}
-                        >
-                            Sign in
-                        </Button>
-                    </div>
-                </Container>
-            </div>
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--gold-border)')}
+                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                >
+                  <div style={{ color: 'var(--gold)', fontSize: '2rem', fontFamily: 'Playfair Display, serif', fontWeight: 700, marginBottom: '16px', opacity: 0.6 }}>
+                    {item.num}
+                  </div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '10px' }}>{item.title}</h3>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: 0 }}>{item.text}</p>
+                </div>
+              </Col>
+            ))}
+          </Row>
+        </Container>
+      </div>
 
-            {/* Cómo funciona */}
-            <Container className="py-5 my-3">
-                <h2 className="text-center fw-bold mb-2">How it works</h2>
-                <p className="text-center text-muted mb-5">Three steps and done.</p>
-                <Row className="g-4">
-                    <Col md={4}>
-                        <Card className="h-100 border-0 shadow-sm text-center p-2">
-                            <Card.Body className="p-4">
-                                <div style={{ fontSize: '2.8rem' }} className="mb-3">📅</div>
-                                <Card.Title className="fw-bold fs-5">Book online</Card.Title>
-                                <Card.Text className="text-muted">
-                                    Choose the day and time that works best for you, from anywhere.
-                                    No calls, no messages.
-                                </Card.Text>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col md={4}>
-                        <Card className="h-100 border-0 shadow-sm text-center p-2">
-                            <Card.Body className="p-4">
-                                <div style={{ fontSize: '2.8rem' }} className="mb-3">✂️</div>
-                                <Card.Title className="fw-bold fs-5">Choose your barber</Card.Title>
-                                <Card.Text className="text-muted">
-                                    Select your trusted barber and the services you want,
-                                    including add-ons like beard or eyebrows.
-                                </Card.Text>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col md={4}>
-                        <Card className="h-100 border-0 shadow-sm text-center p-2">
-                            <Card.Body className="p-4">
-                                <div style={{ fontSize: '2.8rem' }} className="mb-3">⚡</div>
-                                <Card.Title className="fw-bold fs-5">No waiting</Card.Title>
-                                <Card.Text className="text-muted">
-                                    Show up at your time and you're done. No lines, no surprises.
-                                    The barber already knows you're coming.
-                                </Card.Text>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
-            </Container>
+      {/* CTA */}
+      <div style={{ padding: '80px 0', textAlign: 'center' }}>
+        <Container>
+          <p style={{ color: 'var(--gold)', fontSize: '12px', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '16px' }}>
+            Ready?
+          </p>
+          <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '2.2rem', marginBottom: '16px' }}>
+            Ready for your next haircut?
+          </h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '32px', fontSize: '1rem' }}>
+            Create your free account and book in less than 2 minutes.
+          </p>
+          <Button
+            size="lg"
+            variant="primary"
+            className="px-5"
+            style={{ fontWeight: 700 }}
+            onClick={() => navigate('/register')}
+          >
+            Get started →
+          </Button>
+        </Container>
+      </div>
 
-            {/* CTA final */}
-            <div className="bg-dark text-white">
-                <Container className="py-5 text-center">
-                    <h2 className="fw-bold mb-3">Ready for your next haircut?</h2>
-                    <p className="text-white-50 mb-4 fs-5">
-                        Create your free account and book in less than 2 minutes.
-                    </p>
-                    <Button
-                        size="lg"
-                        variant="light"
-                        className="px-5 fw-semibold"
-                        onClick={() => navigate('/register')}
-                    >
-                        Get started →
-                    </Button>
-                </Container>
-            </div>
-
-            {/* Footer mínimo */}
-            <div className="bg-dark border-top border-secondary">
-                <Container className="py-3 text-center">
-                    <small className="text-secondary">© 2025 BarberShop — All rights reserved</small>
-                </Container>
-            </div>
-        </>
-    )
+      {/* Footer */}
+      <div style={{ borderTop: '1px solid var(--border)', padding: '24px 0', textAlign: 'center' }}>
+        <Container>
+          <small style={{ color: 'var(--text-muted)' }}>© 2025 BarberShop — All rights reserved</small>
+        </Container>
+      </div>
+    </div>
+  )
 }

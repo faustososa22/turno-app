@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Alert, Button, Card, Col, Container, Form, Row, Spinner, Table } from 'react-bootstrap'
+import { Button, Col, Container, Form, Row, Spinner, Table } from 'react-bootstrap'
 import { barberosService } from '../../services/barberos'
 import { horariosService } from '../../services/horarios'
 import type { Barbero, HorarioDisponible } from '../../types'
@@ -115,135 +115,131 @@ export function AdminHorarios() {
   const barberoSeleccionado = barberos.find(b => b.id === barberoId)
 
   return (
-    <div style={{ background: '#f8f9fa', minHeight: '100vh' }}>
-      {/* Header */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)',
-        color: 'white',
-        padding: '40px 0 64px',
-      }}>
+    <div className="page-wrapper">
+      <div className="page-header">
         <Container fluid className="px-4 d-flex justify-content-between align-items-center">
           <div>
-            <p className="text-white-50 mb-1" style={{ fontSize: '14px' }}>Admin panel</p>
-            <h2 className="fw-bold mb-0">Schedules</h2>
+            <p className="page-header-label">Admin panel</p>
+            <h2>Schedules</h2>
           </div>
           {barberoId && !mostrarForm && (
-            <Button variant="light" onClick={abrirCrear}>+ Add schedule</Button>
+            <Button variant="primary" onClick={abrirCrear}>+ Add schedule</Button>
           )}
         </Container>
       </div>
 
       <Container fluid className="px-4" style={{ marginTop: '-32px' }}>
-        {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
-        {ok && <Alert variant="success" className="mb-3">{ok}</Alert>}
+        {error && (
+          <div style={{ background: 'rgba(224,85,85,0.1)', border: '1px solid rgba(224,85,85,0.25)', color: '#f08080', borderRadius: '8px', padding: '12px 16px', fontSize: '14px', marginBottom: '16px' }}>
+            {error}
+          </div>
+        )}
+        {ok && (
+          <div style={{ background: 'rgba(40,167,69,0.1)', border: '1px solid rgba(40,167,69,0.25)', color: '#75c987', borderRadius: '8px', padding: '12px 16px', fontSize: '14px', marginBottom: '16px' }}>
+            {ok}
+          </div>
+        )}
 
-        {/* Barber selector */}
-        <Card className="border-0 shadow-sm mb-4">
-          <Card.Body className="p-4">
-            <Form.Group>
-              <Form.Label className="fw-semibold" style={{ fontSize: '13px' }}>Select a barber</Form.Label>
-              {loadingBarberos ? <Spinner animation="border" size="sm" /> : (
-                <Form.Select
-                  value={barberoId}
-                  style={{ maxWidth: '320px' }}
-                  onChange={e => {
-                    setBarberoId(e.target.value ? Number(e.target.value) : '')
-                    setMostrarForm(false)
-                    setOk(null)
-                  }}
-                >
-                  <option value="">-- Select a barber --</option>
-                  {barberos.map(b => (
-                    <option key={b.id} value={b.id}>{b.nombre} {b.apellido}</option>
-                  ))}
-                </Form.Select>
-              )}
-            </Form.Group>
-          </Card.Body>
-        </Card>
+        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px', marginBottom: '16px' }}>
+          <Form.Group>
+            <Form.Label style={{ fontSize: '13px', fontWeight: 600 }}>Select a barber</Form.Label>
+            {loadingBarberos ? <Spinner animation="border" size="sm" style={{ color: 'var(--gold)' }} /> : (
+              <Form.Select
+                value={barberoId}
+                style={{ maxWidth: '320px' }}
+                onChange={e => {
+                  setBarberoId(e.target.value ? Number(e.target.value) : '')
+                  setMostrarForm(false)
+                  setOk(null)
+                }}
+              >
+                <option value="">-- Select a barber --</option>
+                {barberos.map(b => (
+                  <option key={b.id} value={b.id}>{b.nombre} {b.apellido}</option>
+                ))}
+              </Form.Select>
+            )}
+          </Form.Group>
+        </div>
 
         {mostrarForm && (
-          <Card className="border-0 shadow-sm mb-4">
-            <Card.Body className="p-4">
-              <h5 className="fw-bold mb-4">{editandoId ? 'Edit schedule' : 'New schedule'}</h5>
-              <Form onSubmit={handleSubmit}>
-                <Row className="g-3">
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label className="fw-semibold" style={{ fontSize: '13px' }}>Day of the week</Form.Label>
-                      <Form.Select value={form.diaSemana} onChange={e => setForm(f => ({ ...f, diaSemana: e.target.value }))}>
-                        {DIAS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label className="fw-semibold" style={{ fontSize: '13px' }}>Start time</Form.Label>
-                      <Form.Control type="time" value={form.horaInicio} required
-                        onChange={e => setForm(f => ({ ...f, horaInicio: e.target.value }))} />
-                    </Form.Group>
-                  </Col>
-                  <Col md={4}>
-                    <Form.Group>
-                      <Form.Label className="fw-semibold" style={{ fontSize: '13px' }}>End time</Form.Label>
-                      <Form.Control type="time" value={form.horaFin} required
-                        onChange={e => setForm(f => ({ ...f, horaFin: e.target.value }))} />
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <div className="d-flex gap-2 mt-4">
-                  <Button type="submit" variant="primary" disabled={loadingForm}>
-                    {loadingForm ? 'Saving...' : 'Save'}
-                  </Button>
-                  <Button type="button" variant="outline-secondary" onClick={cancelarForm}>Cancel</Button>
-                </div>
-              </Form>
-            </Card.Body>
-          </Card>
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px', marginBottom: '16px' }}>
+            <h5 style={{ marginBottom: '20px' }}>{editandoId ? 'Edit schedule' : 'New schedule'}</h5>
+            <Form onSubmit={handleSubmit}>
+              <Row className="g-3">
+                <Col md={4}>
+                  <Form.Group>
+                    <Form.Label style={{ fontSize: '13px' }}>Day of the week</Form.Label>
+                    <Form.Select value={form.diaSemana} onChange={e => setForm(f => ({ ...f, diaSemana: e.target.value }))}>
+                      {DIAS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group>
+                    <Form.Label style={{ fontSize: '13px' }}>Start time</Form.Label>
+                    <Form.Control type="time" value={form.horaInicio} required
+                      onChange={e => setForm(f => ({ ...f, horaInicio: e.target.value }))} />
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group>
+                    <Form.Label style={{ fontSize: '13px' }}>End time</Form.Label>
+                    <Form.Control type="time" value={form.horaFin} required
+                      onChange={e => setForm(f => ({ ...f, horaFin: e.target.value }))} />
+                  </Form.Group>
+                </Col>
+              </Row>
+              <div className="d-flex gap-2 mt-4">
+                <Button type="submit" variant="primary" disabled={loadingForm}>
+                  {loadingForm ? 'Saving...' : 'Save'}
+                </Button>
+                <Button type="button" variant="outline-secondary" onClick={cancelarForm}>Cancel</Button>
+              </div>
+            </Form>
+          </div>
         )}
 
         {barberoId && (
-          <Card className="border-0 shadow-sm">
-            <Card.Body className="p-0">
-              <div className="px-4 py-3 border-bottom">
-                <span className="fw-semibold">
-                  {barberoSeleccionado ? `${barberoSeleccionado.nombre} ${barberoSeleccionado.apellido}` : 'Barber'}'s schedules
-                </span>
-              </div>
-              {loadingHorarios ? (
-                <div className="text-center py-5"><Spinner animation="border" /></div>
-              ) : (
-                <Table hover responsive className="mb-0">
-                  <thead style={{ background: '#f8f9fa' }}>
-                    <tr>
-                      <th className="px-4 py-3 fw-semibold text-muted border-0" style={{ fontSize: '13px' }}>Day</th>
-                      <th className="py-3 fw-semibold text-muted border-0" style={{ fontSize: '13px' }}>Start time</th>
-                      <th className="py-3 fw-semibold text-muted border-0" style={{ fontSize: '13px' }}>End time</th>
-                      <th className="py-3 border-0"></th>
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+            <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ fontWeight: 600 }}>
+                {barberoSeleccionado ? `${barberoSeleccionado.nombre} ${barberoSeleccionado.apellido}` : 'Barber'}'s schedules
+              </span>
+            </div>
+            {loadingHorarios ? (
+              <div className="text-center py-5"><Spinner animation="border" style={{ color: 'var(--gold)' }} /></div>
+            ) : (
+              <Table hover responsive className="mb-0">
+                <thead>
+                  <tr>
+                    <th className="px-4 py-3 border-0">Day</th>
+                    <th className="py-3 border-0">Start time</th>
+                    <th className="py-3 border-0">End time</th>
+                    <th className="py-3 border-0"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {horarios.map(h => (
+                    <tr key={h.id} style={{ verticalAlign: 'middle' }}>
+                      <td className="px-4 py-3" style={{ fontSize: '14px', fontWeight: 600 }}>{diaLabel(h.diaSemana)}</td>
+                      <td className="py-3" style={{ fontSize: '14px' }}>{h.horaInicio.slice(0, 5)}</td>
+                      <td className="py-3" style={{ fontSize: '14px' }}>{h.horaFin.slice(0, 5)}</td>
+                      <td className="py-3">
+                        <div className="d-flex gap-2">
+                          <Button size="sm" variant="outline-secondary" onClick={() => abrirEditar(h)}>Edit</Button>
+                          <Button size="sm" variant="outline-danger" onClick={() => onEliminar(h.id)}>Delete</Button>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {horarios.map(h => (
-                      <tr key={h.id} style={{ verticalAlign: 'middle' }}>
-                        <td className="px-4 py-3 fw-semibold" style={{ fontSize: '14px' }}>{diaLabel(h.diaSemana)}</td>
-                        <td className="py-3" style={{ fontSize: '14px' }}>{h.horaInicio.slice(0, 5)}</td>
-                        <td className="py-3" style={{ fontSize: '14px' }}>{h.horaFin.slice(0, 5)}</td>
-                        <td className="py-3">
-                          <div className="d-flex gap-2">
-                            <Button size="sm" variant="outline-secondary" onClick={() => abrirEditar(h)}>Edit</Button>
-                            <Button size="sm" variant="outline-danger" onClick={() => onEliminar(h.id)}>Delete</Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {horarios.length === 0 && (
-                      <tr><td colSpan={4} className="text-center py-4 text-muted">This barber has no schedules.</td></tr>
-                    )}
-                  </tbody>
-                </Table>
-              )}
-            </Card.Body>
-          </Card>
+                  ))}
+                  {horarios.length === 0 && (
+                    <tr><td colSpan={4} className="text-center py-4" style={{ color: 'var(--text-muted)' }}>This barber has no schedules.</td></tr>
+                  )}
+                </tbody>
+              </Table>
+            )}
+          </div>
         )}
       </Container>
     </div>

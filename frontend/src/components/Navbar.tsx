@@ -16,24 +16,25 @@ export function AppNavBar() {
   const isActive = (path: string) => location.pathname === path
 
   const navLinkStyle = (path: string): React.CSSProperties => ({
-    color: isActive(path) ? 'white' : 'rgba(255,255,255,0.65)',
+    color: isActive(path) ? 'var(--gold)' : 'var(--text-muted)',
     textDecoration: 'none',
-    fontSize: '14px',
+    fontSize: '13px',
     fontWeight: isActive(path) ? 600 : 400,
     padding: '6px 12px',
     borderRadius: '6px',
-    background: isActive(path) ? 'rgba(255,255,255,0.12)' : 'transparent',
+    background: isActive(path) ? 'var(--gold-dim)' : 'transparent',
+    letterSpacing: '0.02em',
     transition: 'all 0.15s',
   })
 
   const initials = user?.nombre
-    ? user.nombre.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+    ? user.nombre.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
     : user?.email?.slice(0, 2).toUpperCase() ?? '?'
 
   return (
     <nav style={{
-      background: 'linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)',
-      borderBottom: '1px solid rgba(255,255,255,0.08)',
+      background: 'var(--bg-surface)',
+      borderBottom: '1px solid var(--border)',
       position: 'sticky',
       top: 0,
       zIndex: 1000,
@@ -46,14 +47,18 @@ export function AppNavBar() {
         alignItems: 'center',
         gap: '8px',
       }}>
-        {/* Logo */}
-        <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', marginRight: '24px' }}>
-          <span style={{ color: 'white', fontWeight: 700, fontSize: '16px', letterSpacing: '-0.01em' }}>
-            TurnoApp
+        <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px', marginRight: '24px' }}>
+          <span style={{
+            color: 'var(--gold)',
+            fontFamily: 'Playfair Display, serif',
+            fontWeight: 700,
+            fontSize: '18px',
+            letterSpacing: '0.02em',
+          }}>
+            BarberShop
           </span>
         </Link>
 
-        {/* Nav links — desktop */}
         <div className="d-none d-lg-flex align-items-center gap-1 flex-grow-1">
           {isAuthenticated && user?.rol === 'cliente' && (
             <>
@@ -75,74 +80,74 @@ export function AppNavBar() {
           )}
         </div>
 
-        {/* Right side — desktop */}
         <div className="d-none d-lg-flex align-items-center gap-3 ms-auto">
           {isAuthenticated ? (
             <>
-              {/* Avatar + name */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.18)',
+                  background: 'var(--gold-dim)',
+                  border: '1px solid var(--gold-border)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', fontWeight: 700, fontSize: '12px',
+                  color: 'var(--gold)', fontWeight: 700, fontSize: '12px',
                 }}>
                   {initials}
                 </div>
-                <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px' }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
                   {user?.nombre || user?.email}
                 </span>
               </div>
               <button
                 onClick={handleLogout}
                 style={{
-                  background: 'rgba(255,255,255,0.1)',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  color: 'white',
+                  background: 'transparent',
+                  border: '1px solid var(--border-light)',
+                  color: 'var(--text-muted)',
                   borderRadius: '6px',
                   padding: '6px 14px',
                   fontSize: '13px',
                   cursor: 'pointer',
                   transition: 'all 0.15s',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.18)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = 'var(--gold-border)'
+                  e.currentTarget.style.color = 'var(--gold)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = 'var(--border-light)'
+                  e.currentTarget.style.color = 'var(--text-muted)'
+                }}
               >
                 Logout
               </button>
             </>
           ) : (
             <>
-              <Link to="/login" style={{ color: 'rgba(255,255,255,0.75)', fontSize: '14px', textDecoration: 'none' }}>Login</Link>
+              <Link to="/login" style={{ color: 'var(--text-muted)', fontSize: '13px', textDecoration: 'none' }}>Login</Link>
               <Link to="/register" style={{
-                background: 'white', color: '#0f3460', borderRadius: '6px',
-                padding: '6px 14px', fontSize: '13px', fontWeight: 600, textDecoration: 'none',
+                background: 'var(--gold)', color: '#111', borderRadius: '6px',
+                padding: '6px 16px', fontSize: '13px', fontWeight: 700, textDecoration: 'none',
               }}>
-                Register
+                Get started
               </Link>
             </>
           )}
         </div>
 
-        {/* Hamburger — mobile */}
         <button
           className="d-lg-none ms-auto"
           onClick={() => setMenuOpen(o => !o)}
-          style={{
-            background: 'none', border: 'none', color: 'white',
-            fontSize: '20px', cursor: 'pointer', padding: '4px 8px',
-          }}
+          style={{ background: 'none', border: 'none', color: 'var(--text)', fontSize: '20px', cursor: 'pointer', padding: '4px 8px' }}
           aria-label="Toggle menu"
         >
           {menuOpen ? '✕' : '☰'}
         </button>
       </div>
 
-      {/* Mobile menu */}
       {menuOpen && (
         <div className="d-lg-none" style={{
-          background: '#0f3460',
-          borderTop: '1px solid rgba(255,255,255,0.1)',
+          background: 'var(--bg-elevated)',
+          borderTop: '1px solid var(--border)',
           padding: '12px 24px 16px',
           display: 'flex',
           flexDirection: 'column',
@@ -173,13 +178,13 @@ export function AppNavBar() {
             </>
           )}
           {isAuthenticated && (
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '8px', paddingTop: '12px' }}>
-              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', marginBottom: '8px' }}>
+            <div style={{ borderTop: '1px solid var(--border)', marginTop: '8px', paddingTop: '12px' }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>
                 {user?.nombre || user?.email}
               </div>
               <button onClick={handleLogout} style={{
-                background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
-                color: 'white', borderRadius: '6px', padding: '8px 16px',
+                background: 'transparent', border: '1px solid var(--border-light)',
+                color: 'var(--text-muted)', borderRadius: '6px', padding: '8px 16px',
                 fontSize: '13px', cursor: 'pointer', width: '100%',
               }}>
                 Logout
@@ -194,19 +199,15 @@ export function AppNavBar() {
 
 function MobileLink({ to, label, active, onClick }: { to: string; label: string; active: boolean; onClick: () => void }) {
   return (
-    <Link
-      to={to}
-      onClick={onClick}
-      style={{
-        color: active ? 'white' : 'rgba(255,255,255,0.7)',
-        textDecoration: 'none',
-        fontSize: '15px',
-        fontWeight: active ? 600 : 400,
-        padding: '10px 12px',
-        borderRadius: '6px',
-        background: active ? 'rgba(255,255,255,0.12)' : 'transparent',
-      }}
-    >
+    <Link to={to} onClick={onClick} style={{
+      color: active ? 'var(--gold)' : 'var(--text-muted)',
+      textDecoration: 'none',
+      fontSize: '15px',
+      fontWeight: active ? 600 : 400,
+      padding: '10px 12px',
+      borderRadius: '6px',
+      background: active ? 'var(--gold-dim)' : 'transparent',
+    }}>
       {label}
     </Link>
   )

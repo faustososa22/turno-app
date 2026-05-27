@@ -1,7 +1,396 @@
-html,
-body,
-#root {
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+/* ── Variables ── */
+:root {
+  --bg: #111111;
+  --bg-surface: #1a1a1a;
+  --bg-elevated: #212121;
+  --gold: #c9a84c;
+  --gold-light: #e0bc6a;
+  --gold-dim: rgba(201, 168, 76, 0.1);
+  --gold-border: rgba(201, 168, 76, 0.25);
+  --text: #f0ede8;
+  --text-muted: #8a8680;
+  --border: #2a2a2a;
+  --border-light: #333333;
+  --danger: #e05555;
+  --success: #4caf50;
+}
+
+/* ── Base ── */
+html, body, #root {
   width: 100%;
   min-height: 100vh;
   margin: 0;
+}
+
+body {
+  background-color: var(--bg) !important;
+  color: var(--text) !important;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── Bootstrap dark overrides ── */
+.card {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--text);
+  --bs-table-hover-bg: rgba(255,255,255,0.04);
+  --bs-table-border-color: var(--border);
+  color: var(--text) !important;
+}
+
+.table thead th {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-muted) !important;
+  border-color: var(--border) !important;
+}
+
+.table td {
+  border-color: var(--border) !important;
+}
+
+.form-control, .form-select {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-light) !important;
+  color: var(--text) !important;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 0 3px var(--gold-dim) !important;
+  background-color: var(--bg-elevated) !important;
+  color: var(--text) !important;
+}
+
+.form-control::placeholder {
+  color: var(--text-muted) !important;
+}
+
+.form-label {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.form-control:disabled, .form-select:disabled {
+  background-color: var(--bg) !important;
+  opacity: 0.5;
+}
+
+.modal-content {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+.modal-header, .modal-footer {
+  border-color: var(--border) !important;
+}
+
+.dropdown-menu {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border) !important;
+}
+
+.dropdown-item {
+  color: var(--text) !important;
+}
+
+.dropdown-item:hover {
+  background-color: var(--bg-elevated) !important;
+}
+
+/* ── Gold button (primary) ── */
+.btn-primary {
+  background-color: var(--gold) !important;
+  border-color: var(--gold) !important;
+  color: #111 !important;
+  font-weight: 600;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--gold-light) !important;
+  border-color: var(--gold-light) !important;
+  color: #111 !important;
+}
+
+.btn-primary:disabled {
+  background-color: var(--gold) !important;
+  border-color: var(--gold) !important;
+  opacity: 0.45;
+}
+
+.btn-outline-primary {
+  border-color: var(--gold) !important;
+  color: var(--gold) !important;
+  background: transparent !important;
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+  background-color: var(--gold-dim) !important;
+  color: var(--gold) !important;
+}
+
+.btn-outline-secondary {
+  border-color: var(--border-light) !important;
+  color: var(--text-muted) !important;
+  background: transparent !important;
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text) !important;
+}
+
+.btn-outline-danger {
+  border-color: var(--danger) !important;
+  color: var(--danger) !important;
+  background: transparent !important;
+}
+
+.btn-outline-danger:hover:not(:disabled) {
+  background-color: rgba(224, 85, 85, 0.1) !important;
+}
+
+.btn-outline-light {
+  border-color: rgba(255,255,255,0.3) !important;
+  color: var(--text) !important;
+}
+
+.btn-outline-light:hover {
+  background-color: rgba(255,255,255,0.08) !important;
+  color: var(--text) !important;
+}
+
+.btn-light {
+  background-color: var(--gold) !important;
+  border-color: var(--gold) !important;
+  color: #111 !important;
+  font-weight: 600;
+}
+
+.btn-light:hover {
+  background-color: var(--gold-light) !important;
+  border-color: var(--gold-light) !important;
+  color: #111 !important;
+}
+
+.btn-success {
+  background-color: var(--success) !important;
+  border-color: var(--success) !important;
+  color: #fff !important;
+}
+
+.border-bottom {
+  border-color: var(--border) !important;
+}
+
+.border-top {
+  border-color: var(--border) !important;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.alert-danger {
+  background-color: rgba(224, 85, 85, 0.12) !important;
+  border-color: rgba(224, 85, 85, 0.25) !important;
+  color: #f08080 !important;
+}
+
+/* ── Page layout helpers ── */
+.page-wrapper {
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+.page-header {
+  background: linear-gradient(135deg, #1a1a1a 0%, #222222 100%);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  padding: 40px 0 64px;
+}
+
+.page-header-label {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+
+.page-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  margin: 0;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 20px;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  font-family: 'Playfair Display', serif;
+  color: var(--gold);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Service / slot selection cards ── */
+.selectable-card {
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 14px 16px;
+  cursor: pointer;
+  background: var(--bg-elevated);
+  transition: all 0.15s;
+}
+
+.selectable-card:hover {
+  border-color: var(--gold-border);
+  background: var(--bg-elevated);
+}
+
+.selectable-card.selected {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+}
+
+.selectable-card .card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 2px;
+}
+
+.selectable-card .card-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.addon-card {
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.15s;
+}
+
+.addon-card.selected {
+  border-color: var(--success);
+  background: rgba(76, 175, 80, 0.08);
+}
+
+.addon-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  border: 2px solid var(--border-light);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.addon-checkbox.checked {
+  border-color: var(--success);
+  background: var(--success);
+}
+
+.time-slot {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.time-slot:hover {
+  border-color: var(--gold-border);
+}
+
+.time-slot.selected {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* ── Step labels ── */
+.step-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+
+/* ── Summary sidebar ── */
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.summary-row-label {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.summary-row-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.summary-total {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--gold);
+  font-family: 'Playfair Display', serif;
+}
+
+/* ── Headings ── */
+h1, h2, h3, h4, h5 {
+  font-family: 'Playfair Display', serif;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+/* ── Selection ── */
+::selection {
+  background-color: var(--gold-dim);
+  color: var(--text);
 }

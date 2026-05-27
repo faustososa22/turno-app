@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { turnoService } from "../../services/turnos"
-import { Badge, Button, Card, Col, Container, Form, Row, Spinner, Table } from "react-bootstrap";
+import { Badge, Button, Col, Container, Form, Row, Spinner, Table } from "react-bootstrap";
 import { useAuth } from "../../auth/useAuth";
 import type { Turno } from "../../types";
 import { AppToast } from "../../components/AppToast";
@@ -70,7 +70,7 @@ export function Dashboard(){
     const sinPagar = turnos.filter(t => t.estadoPago === 'pendiente' && t.estado !== 'cancelado').length
 
     return(
-        <div style={{ background: '#f8f9fa', minHeight: '100vh' }}>
+        <div className="page-wrapper">
             <AppToast
                 show={toast !== null}
                 message={toast?.message ?? ''}
@@ -86,140 +86,128 @@ export function Dashboard(){
                 onCancelar={() => setTurnoAConfirmar(null)}
             />
 
-            {/* Header */}
-            <div style={{
-                background: 'linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)',
-                color: 'white',
-                padding: '40px 0 64px',
-            }}>
+            <div className="page-header">
                 <Container fluid className="px-4">
-                    <p className="text-white-50 mb-1" style={{ fontSize: '14px' }}>Admin panel</p>
-                    <h2 className="fw-bold mb-0">Appointments</h2>
+                    <p className="page-header-label">Admin panel</p>
+                    <h2>Appointments</h2>
                 </Container>
             </div>
 
             <Container fluid className="px-4" style={{ marginTop: '-32px' }}>
-                {/* Stat cards */}
                 <Row className="g-3 mb-4">
                     <Col xs={6} md={4}>
-                        <Card className="border-0 shadow-sm text-center py-3">
-                            <div className="fw-bold fs-3 text-warning">{pendientes}</div>
-                            <div className="text-muted" style={{ fontSize: '13px' }}>Pending</div>
-                        </Card>
+                        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', textAlign: 'center' }}>
+                            <div className="stat-number">{pendientes}</div>
+                            <div className="stat-label">Pending</div>
+                        </div>
                     </Col>
                     <Col xs={6} md={4}>
-                        <Card className="border-0 shadow-sm text-center py-3">
-                            <div className="fw-bold fs-3 text-success">{confirmados}</div>
-                            <div className="text-muted" style={{ fontSize: '13px' }}>Confirmed</div>
-                        </Card>
+                        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', textAlign: 'center' }}>
+                            <div className="stat-number">{confirmados}</div>
+                            <div className="stat-label">Confirmed</div>
+                        </div>
                     </Col>
                     <Col xs={6} md={4}>
-                        <Card className="border-0 shadow-sm text-center py-3">
-                            <div className="fw-bold fs-3 text-primary">{sinPagar}</div>
-                            <div className="text-muted" style={{ fontSize: '13px' }}>Unpaid</div>
-                        </Card>
+                        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', textAlign: 'center' }}>
+                            <div className="stat-number">{sinPagar}</div>
+                            <div className="stat-label">Unpaid</div>
+                        </div>
                     </Col>
                 </Row>
 
-                {/* Table card */}
-                <Card className="border-0 shadow-sm">
-                    <Card.Body className="p-0">
-                        {/* Filter bar */}
-                        <div className="px-4 py-3 border-bottom d-flex align-items-center gap-3">
-                            <Form.Control
-                                type="date"
-                                value={fecha}
-                                onChange={e => setFecha(e.target.value)}
-                                style={{ maxWidth: '200px' }}
-                            />
-                            {fecha && (
-                                <Button variant="outline-secondary" size="sm" onClick={() => setFecha('')}>
-                                    Clear
-                                </Button>
-                            )}
-                            <span className="text-muted ms-auto" style={{ fontSize: '13px' }}>
-                                {fecha ? `${turnos.length} result(s)` : 'Upcoming appointments'}
-                            </span>
-                        </div>
-
-                        {loading ? (
-                            <div className="text-center py-5">
-                                <Spinner animation="border" />
-                            </div>
-                        ) : (
-                            <Table hover responsive className="mb-0">
-                                <thead style={{ background: '#f8f9fa' }}>
-                                    <tr>
-                                        <th className="px-4 py-3 fw-semibold text-muted border-0" style={{ fontSize: '13px' }}>Date</th>
-                                        <th className="py-3 fw-semibold text-muted border-0" style={{ fontSize: '13px' }}>Barber</th>
-                                        <th className="py-3 fw-semibold text-muted border-0" style={{ fontSize: '13px' }}>Client</th>
-                                        <th className="py-3 fw-semibold text-muted border-0" style={{ fontSize: '13px' }}>Service</th>
-                                        <th className="py-3 fw-semibold text-muted border-0" style={{ fontSize: '13px' }}>Status</th>
-                                        <th className="py-3 fw-semibold text-muted border-0" style={{ fontSize: '13px' }}>Payment</th>
-                                        <th className="py-3 fw-semibold text-muted border-0" style={{ fontSize: '13px' }}>Price</th>
-                                        <th className="py-3 border-0"></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {turnos.map((t) => (
-                                        <tr key={t.id} style={{ verticalAlign: 'middle' }}>
-                                            <td className="px-4 py-3" style={{ fontSize: '14px' }}>
-                                                {new Date(t.fechaHora).toLocaleString('en-US', {
-                                                    month: 'short', day: 'numeric',
-                                                    hour: '2-digit', minute: '2-digit'
-                                                })}
-                                            </td>
-                                            <td className="py-3" style={{ fontSize: '14px' }}>{t.barbero}</td>
-                                            <td className="py-3" style={{ fontSize: '14px' }}>{t.cliente}</td>
-                                            <td className="py-3" style={{ fontSize: '14px', maxWidth: '180px' }}>
-                                                {t.servicios && t.servicios.length > 0 ? t.servicios.join(', ') : t.servicio}
-                                            </td>
-                                            <td className="py-3">
-                                                <Badge bg={estadoVariant(t.estado)} className="text-capitalize" style={{ fontSize: '12px' }}>
-                                                    {t.estado}
-                                                </Badge>
-                                            </td>
-                                            <td className="py-3">
-                                                <Badge bg={pagoVariant(t.estadoPago)} className="text-capitalize" style={{ fontSize: '12px' }}>
-                                                    {t.estadoPago}
-                                                </Badge>
-                                            </td>
-                                            <td className="py-3 fw-semibold" style={{ fontSize: '14px' }}>${t.precioTotal ?? '-'}</td>
-                                            <td className="py-3">
-                                                <div className="d-flex gap-2">
-                                                    {t.estado === 'pendiente' && (
-                                                        <Button size="sm" variant="success"
-                                                            onClick={() => onConfirmar(t.id)}>
-                                                            Confirm
-                                                        </Button>
-                                                    )}
-                                                    {t.estado !== 'cancelado' && t.estadoPago === 'pendiente' && (
-                                                        <Button size="sm" variant="primary"
-                                                            onClick={() => onMarcarPagado(t.id)}>
-                                                            Paid
-                                                        </Button>
-                                                    )}
-                                                    <Button size="sm" variant="outline-danger"
-                                                        onClick={() => setTurnoAConfirmar(t.id)}
-                                                        disabled={t.estado === 'cancelado'}>
-                                                        Cancel
-                                                    </Button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {turnos.length === 0 && (
-                                        <tr>
-                                            <td colSpan={8} className="text-center py-5 text-muted">
-                                                {fecha ? 'No appointments for that date.' : 'No upcoming appointments.'}
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </Table>
+                <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+                    <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                        <Form.Control
+                            type="date"
+                            value={fecha}
+                            onChange={e => setFecha(e.target.value)}
+                            style={{ maxWidth: '200px' }}
+                        />
+                        {fecha && (
+                            <Button variant="outline-secondary" size="sm" onClick={() => setFecha('')}>
+                                Clear
+                            </Button>
                         )}
-                    </Card.Body>
-                </Card>
+                        <span className="ms-auto" style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                            {fecha ? `${turnos.length} result(s)` : 'Upcoming appointments'}
+                        </span>
+                    </div>
+
+                    {loading ? (
+                        <div className="text-center py-5">
+                            <Spinner animation="border" style={{ color: 'var(--gold)' }} />
+                        </div>
+                    ) : (
+                        <Table hover responsive className="mb-0">
+                            <thead>
+                                <tr>
+                                    <th className="px-4 py-3 border-0">Date</th>
+                                    <th className="py-3 border-0">Barber</th>
+                                    <th className="py-3 border-0">Client</th>
+                                    <th className="py-3 border-0">Service</th>
+                                    <th className="py-3 border-0">Status</th>
+                                    <th className="py-3 border-0">Payment</th>
+                                    <th className="py-3 border-0">Price</th>
+                                    <th className="py-3 border-0"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {turnos.map((t) => (
+                                    <tr key={t.id} style={{ verticalAlign: 'middle' }}>
+                                        <td className="px-4 py-3" style={{ fontSize: '14px' }}>
+                                            {new Date(t.fechaHora).toLocaleString('en-US', {
+                                                month: 'short', day: 'numeric',
+                                                hour: '2-digit', minute: '2-digit'
+                                            })}
+                                        </td>
+                                        <td className="py-3" style={{ fontSize: '14px' }}>{t.barbero}</td>
+                                        <td className="py-3" style={{ fontSize: '14px' }}>{t.cliente}</td>
+                                        <td className="py-3" style={{ fontSize: '14px', maxWidth: '180px' }}>
+                                            {t.servicios && t.servicios.length > 0 ? t.servicios.join(', ') : t.servicio}
+                                        </td>
+                                        <td className="py-3">
+                                            <Badge bg={estadoVariant(t.estado)} className="text-capitalize" style={{ fontSize: '12px' }}>
+                                                {t.estado}
+                                            </Badge>
+                                        </td>
+                                        <td className="py-3">
+                                            <Badge bg={pagoVariant(t.estadoPago)} className="text-capitalize" style={{ fontSize: '12px' }}>
+                                                {t.estadoPago}
+                                            </Badge>
+                                        </td>
+                                        <td className="py-3" style={{ fontSize: '14px', fontWeight: 600 }}>${t.precioTotal ?? '-'}</td>
+                                        <td className="py-3">
+                                            <div className="d-flex gap-2">
+                                                {t.estado === 'pendiente' && (
+                                                    <Button size="sm" variant="success" onClick={() => onConfirmar(t.id)}>
+                                                        Confirm
+                                                    </Button>
+                                                )}
+                                                {t.estado !== 'cancelado' && t.estadoPago === 'pendiente' && (
+                                                    <Button size="sm" variant="primary" onClick={() => onMarcarPagado(t.id)}>
+                                                        Paid
+                                                    </Button>
+                                                )}
+                                                <Button size="sm" variant="outline-danger"
+                                                    onClick={() => setTurnoAConfirmar(t.id)}
+                                                    disabled={t.estado === 'cancelado'}>
+                                                    Cancel
+                                                </Button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {turnos.length === 0 && (
+                                    <tr>
+                                        <td colSpan={8} className="text-center py-5" style={{ color: 'var(--text-muted)' }}>
+                                            {fecha ? 'No appointments for that date.' : 'No upcoming appointments.'}
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </Table>
+                    )}
+                </div>
             </Container>
         </div>
     )

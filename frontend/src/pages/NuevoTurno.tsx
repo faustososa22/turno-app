@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Badge, Button, Card, Col, Container, Form, Row, Spinner } from 'react-bootstrap'
+import { Badge, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import type { Barbero, HuecoDisponible, Servicio } from '../types'
 import { barberosService } from '../services/barberos'
@@ -49,9 +49,7 @@ export function NuevoTurno() {
       setError(null)
       try {
         const data = await serviciosService.getByBarbero(Number(barberoId))
-        setServicios(data)
-        setServicioBaseId('')
-        setAddonIds([])
+        setServicios(data); setServicioBaseId(''); setAddonIds([])
       } catch {
         setError('Could not load barber services')
       }
@@ -77,17 +75,14 @@ export function NuevoTurno() {
   const cargarHuecos = async () => {
     if (!barberoId || !fecha || !duracionTotal) return
     const [anio, mes, dia] = fecha.split('-').map(Number)
-    setLoadingHuecos(true)
-    setError(null)
-    setHora('')
+    setLoadingHuecos(true); setError(null); setHora('')
     try {
       const data = await horariosService.getHuecos({ barberoId: Number(barberoId), anio, mes, dia, duracionMinutos: duracionTotal })
       setHuecos(data)
     } catch {
       setError('Could not load available time slots')
     } finally {
-      setLoadingHuecos(false)
-      setHuecosConsultados(true)
+      setLoadingHuecos(false); setHuecosConsultados(true)
     }
   }
 
@@ -99,18 +94,10 @@ export function NuevoTurno() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
-    if (!barberoId || !servicioBaseId || !fecha || !hora) {
-      setError('Please fill in all required fields')
-      return
-    }
+    if (!barberoId || !servicioBaseId || !fecha || !hora) { setError('Please fill in all required fields'); return }
     setLoadingSubmit(true)
     try {
-      await turnoService.crearTurno({
-        barberoId: Number(barberoId),
-        servicioBaseId: Number(servicioBaseId),
-        addonIds,
-        fechaHora: `${fecha}T${hora}:00`,
-      })
+      await turnoService.crearTurno({ barberoId: Number(barberoId), servicioBaseId: Number(servicioBaseId), addonIds, fechaHora: `${fecha}T${hora}:00` })
       setSubmitOk(true)
       setTimeout(() => navigate('/mis-turnos'), 1200)
     } catch {
@@ -124,243 +111,152 @@ export function NuevoTurno() {
   const servicioBase = servicios.find(s => s.id === Number(servicioBaseId))
   const huecosFiltrados = huecos.filter(h => h.disponible)
 
-  if (loadingInicial) {
-    return (
-      <div style={{ background: '#f8f9fa', minHeight: '100vh' }}>
-        <div style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)', color: 'white', padding: '40px 0 64px' }}>
-          <Container fluid className="px-4">
-            <p className="text-white-50 mb-1" style={{ fontSize: '14px' }}>Booking</p>
-            <h2 className="fw-bold mb-0">New appointment</h2>
-          </Container>
-        </div>
-        <Container fluid className="px-4" style={{ marginTop: '-32px' }}>
-          <Card className="border-0 shadow-sm p-5 text-center">
-            <Spinner animation="border" />
-          </Card>
-        </Container>
-      </div>
-    )
-  }
+  const pageHeader = (
+    <div className="page-header">
+      <Container fluid className="px-4">
+        <p className="page-header-label">Booking</p>
+        <h2>New appointment</h2>
+      </Container>
+    </div>
+  )
 
-  if (submitOk) {
-    return (
-      <div style={{ background: '#f8f9fa', minHeight: '100vh' }}>
-        <div style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)', color: 'white', padding: '40px 0 64px' }}>
-          <Container fluid className="px-4">
-            <p className="text-white-50 mb-1" style={{ fontSize: '14px' }}>Booking</p>
-            <h2 className="fw-bold mb-0">New appointment</h2>
-          </Container>
+  if (loadingInicial) return (
+    <div className="page-wrapper">
+      {pageHeader}
+      <Container fluid className="px-4" style={{ marginTop: '-32px' }}>
+        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '48px', textAlign: 'center' }}>
+          <Spinner animation="border" style={{ color: 'var(--gold)' }} />
         </div>
-        <Container fluid className="px-4" style={{ marginTop: '-32px' }}>
-          <Card className="border-0 shadow-sm text-center p-5">
-            <div style={{ fontSize: '3rem' }}>✅</div>
-            <h4 className="fw-bold mt-3 mb-1">Appointment booked!</h4>
-            <p className="text-muted">Redirecting to your appointments...</p>
-          </Card>
-        </Container>
-      </div>
-    )
-  }
+      </Container>
+    </div>
+  )
+
+  if (submitOk) return (
+    <div className="page-wrapper">
+      {pageHeader}
+      <Container fluid className="px-4" style={{ marginTop: '-32px' }}>
+        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '64px', textAlign: 'center' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>✅</div>
+          <h4 style={{ fontFamily: 'Playfair Display, serif', marginBottom: '8px' }}>Appointment booked!</h4>
+          <p style={{ color: 'var(--text-muted)' }}>Redirecting to your appointments...</p>
+        </div>
+      </Container>
+    </div>
+  )
 
   return (
-    <div style={{ background: '#f8f9fa', minHeight: '100vh' }}>
-      {/* Header */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)',
-        color: 'white',
-        padding: '40px 0 64px',
-      }}>
-        <Container fluid className="px-4">
-          <p className="text-white-50 mb-1" style={{ fontSize: '14px' }}>Booking</p>
-          <h2 className="fw-bold mb-0">New appointment</h2>
-        </Container>
-      </div>
-
+    <div className="page-wrapper">
+      {pageHeader}
       <Container fluid className="px-4" style={{ marginTop: '-32px' }}>
         <Row className="g-4">
-          {/* Form */}
           <Col lg={8}>
             {error && (
-              <div className="alert alert-danger border-0 shadow-sm mb-4" role="alert">{error}</div>
+              <div style={{ background: 'rgba(224,85,85,0.1)', border: '1px solid rgba(224,85,85,0.25)', color: '#f08080', borderRadius: '8px', padding: '12px 16px', fontSize: '14px', marginBottom: '20px' }}>
+                {error}
+              </div>
             )}
 
             <Form onSubmit={handleSubmit}>
               {/* Step 1: Barber */}
-              <Card className="border-0 shadow-sm mb-4">
-                <Card.Body className="p-4">
-                  <p className="text-muted mb-1" style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Step 1</p>
-                  <h5 className="fw-bold mb-3">Choose a barber</h5>
-                  <Form.Select
-                    value={barberoId}
-                    onChange={e => setBarberoId(e.target.value ? Number(e.target.value) : '')}
-                    required
-                    style={{ maxWidth: '360px' }}
-                  >
-                    <option value="">Select a barber...</option>
-                    {barberos.map(b => (
-                      <option key={b.id} value={b.id}>{b.nombre} {b.apellido}</option>
-                    ))}
-                  </Form.Select>
-                </Card.Body>
-              </Card>
+              <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px', marginBottom: '16px' }}>
+                <p className="step-label">Step 1</p>
+                <h5 style={{ marginBottom: '16px' }}>Choose a barber</h5>
+                <Form.Select value={barberoId} onChange={e => setBarberoId(e.target.value ? Number(e.target.value) : '')} required style={{ maxWidth: '360px' }}>
+                  <option value="">Select a barber...</option>
+                  {barberos.map(b => <option key={b.id} value={b.id}>{b.nombre} {b.apellido}</option>)}
+                </Form.Select>
+              </div>
 
               {/* Step 2: Service */}
-              <Card className="border-0 shadow-sm mb-4" style={{ opacity: barberoId ? 1 : 0.5 }}>
-                <Card.Body className="p-4">
-                  <p className="text-muted mb-1" style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Step 2</p>
-                  <h5 className="fw-bold mb-3">Choose a service</h5>
+              <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px', marginBottom: '16px', opacity: barberoId ? 1 : 0.5 }}>
+                <p className="step-label">Step 2</p>
+                <h5 style={{ marginBottom: '16px' }}>Choose a service</h5>
+                {barberoId && serviciosBase.length === 0 ? (
+                  <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No services available for this barber.</p>
+                ) : (
+                  <Row className="g-3">
+                    {serviciosBase.map(s => (
+                      <Col md={6} key={s.id}>
+                        <div
+                          className={`selectable-card ${servicioBaseId === s.id ? 'selected' : ''}`}
+                          onClick={() => { if (!barberoId) return; setServicioBaseId(s.id); setHuecos([]); setHuecosConsultados(false); setHora('') }}
+                        >
+                          <div className="card-title">{s.nombre}</div>
+                          <div className="card-subtitle">{s.duracionMinutos} min · ${s.precio}</div>
+                        </div>
+                      </Col>
+                    ))}
+                  </Row>
+                )}
 
-                  {barberoId && serviciosBase.length === 0 ? (
-                    <p className="text-muted" style={{ fontSize: '14px' }}>No services available for this barber.</p>
-                  ) : (
-                    <Row className="g-3">
-                      {serviciosBase.map(s => (
-                        <Col md={6} key={s.id}>
-                          <div
-                            onClick={() => {
-                              if (!barberoId) return
-                              setServicioBaseId(s.id)
-                              setHuecos([]); setHuecosConsultados(false); setHora('')
-                            }}
-                            style={{
-                              border: `2px solid ${servicioBaseId === s.id ? '#0f3460' : '#dee2e6'}`,
-                              borderRadius: '8px',
-                              padding: '14px 16px',
-                              cursor: barberoId ? 'pointer' : 'default',
-                              background: servicioBaseId === s.id ? '#f0f4ff' : 'white',
-                              transition: 'all 0.15s',
-                            }}
-                          >
-                            <div className="fw-semibold" style={{ fontSize: '14px' }}>{s.nombre}</div>
-                            <div className="text-muted" style={{ fontSize: '13px' }}>{s.duracionMinutos} min · ${s.precio}</div>
-                          </div>
-                        </Col>
-                      ))}
-                    </Row>
-                  )}
-
-                  {addons.length > 0 && (
-                    <div className="mt-4">
-                      <p className="fw-semibold mb-2" style={{ fontSize: '13px' }}>Add-ons (optional)</p>
-                      <Row className="g-2">
-                        {addons.map(s => {
-                          const checked = addonIds.includes(s.id)
-                          return (
-                            <Col md={6} key={s.id}>
-                              <div
-                                onClick={() => { if (servicioBaseId) toggleAddon(s.id) }}
-                                style={{
-                                  border: `2px solid ${checked ? '#198754' : '#dee2e6'}`,
-                                  borderRadius: '8px',
-                                  padding: '10px 14px',
-                                  cursor: servicioBaseId ? 'pointer' : 'default',
-                                  background: checked ? '#f0fff4' : 'white',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '10px',
-                                  transition: 'all 0.15s',
-                                  opacity: servicioBaseId ? 1 : 0.5,
-                                }}
-                              >
-                                <div style={{
-                                  width: 18, height: 18, borderRadius: '4px', flexShrink: 0,
-                                  border: `2px solid ${checked ? '#198754' : '#adb5bd'}`,
-                                  background: checked ? '#198754' : 'white',
-                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                }}>
-                                  {checked && <span style={{ color: 'white', fontSize: '11px', lineHeight: 1 }}>✓</span>}
-                                </div>
-                                <div>
-                                  <div className="fw-semibold" style={{ fontSize: '13px' }}>{s.nombre}</div>
-                                  <div className="text-muted" style={{ fontSize: '12px' }}>+{s.duracionMinutos} min · +${s.precio}</div>
-                                </div>
+                {addons.length > 0 && (
+                  <div className="mt-4">
+                    <p style={{ fontWeight: 600, fontSize: '13px', marginBottom: '10px', color: 'var(--text-muted)' }}>Add-ons (optional)</p>
+                    <Row className="g-2">
+                      {addons.map(s => {
+                        const checked = addonIds.includes(s.id)
+                        return (
+                          <Col md={6} key={s.id}>
+                            <div className={`addon-card ${checked ? 'selected' : ''}`} onClick={() => { if (servicioBaseId) toggleAddon(s.id) }} style={{ opacity: servicioBaseId ? 1 : 0.5 }}>
+                              <div className={`addon-checkbox ${checked ? 'checked' : ''}`}>
+                                {checked && <span style={{ color: 'white', fontSize: '11px' }}>✓</span>}
                               </div>
-                            </Col>
-                          )
-                        })}
-                      </Row>
-                    </div>
-                  )}
-                </Card.Body>
-              </Card>
+                              <div>
+                                <div style={{ fontSize: '13px', fontWeight: 600 }}>{s.nombre}</div>
+                                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>+{s.duracionMinutos} min · +${s.precio}</div>
+                              </div>
+                            </div>
+                          </Col>
+                        )
+                      })}
+                    </Row>
+                  </div>
+                )}
+              </div>
 
               {/* Step 3: Date & time */}
-              <Card className="border-0 shadow-sm mb-4" style={{ opacity: servicioBaseId ? 1 : 0.5 }}>
-                <Card.Body className="p-4">
-                  <p className="text-muted mb-1" style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Step 3</p>
-                  <h5 className="fw-bold mb-3">Pick a date & time</h5>
+              <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px', marginBottom: '24px', opacity: servicioBaseId ? 1 : 0.5 }}>
+                <p className="step-label">Step 3</p>
+                <h5 style={{ marginBottom: '16px' }}>Pick a date & time</h5>
+                <div className="d-flex align-items-end gap-3 mb-4" style={{ flexWrap: 'wrap' }}>
+                  <Form.Group>
+                    <Form.Label>Date</Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={fecha}
+                      min={new Date().toISOString().split('T')[0]}
+                      onChange={e => { setFecha(e.target.value); setHuecos([]); setHuecosConsultados(false); setHora('') }}
+                      required
+                      disabled={!servicioBaseId}
+                      style={{ maxWidth: '200px' }}
+                    />
+                  </Form.Group>
+                  <Button type="button" variant="outline-primary" onClick={cargarHuecos} disabled={!barberoId || !fecha || !duracionTotal || loadingHuecos}>
+                    {loadingHuecos ? <><Spinner animation="border" size="sm" className="me-2" />Loading...</> : 'Search slots'}
+                  </Button>
+                </div>
 
-                  <div className="d-flex align-items-end gap-3 mb-4" style={{ flexWrap: 'wrap' }}>
-                    <Form.Group>
-                      <Form.Label className="fw-semibold" style={{ fontSize: '13px' }}>Date</Form.Label>
-                      <Form.Control
-                        type="date"
-                        value={fecha}
-                        min={new Date().toISOString().split('T')[0]}
-                        onChange={e => {
-                          setFecha(e.target.value)
-                          setHuecos([]); setHuecosConsultados(false); setHora('')
-                        }}
-                        required
-                        disabled={!servicioBaseId}
-                        style={{ maxWidth: '200px' }}
-                      />
-                    </Form.Group>
-                    <Button
-                      type="button"
-                      variant="outline-primary"
-                      onClick={cargarHuecos}
-                      disabled={!barberoId || !fecha || !duracionTotal || loadingHuecos}
-                    >
-                      {loadingHuecos ? <><Spinner animation="border" size="sm" className="me-2" />Loading...</> : 'Search slots'}
-                    </Button>
-                  </div>
+                {loadingHuecos && <div className="text-center py-3"><Spinner animation="border" style={{ color: 'var(--gold)' }} /></div>}
 
-                  {loadingHuecos && (
-                    <div className="text-center py-3"><Spinner animation="border" /></div>
-                  )}
+                {!loadingHuecos && huecosConsultados && huecosFiltrados.length === 0 && (
+                  <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No available time slots for that day.</p>
+                )}
 
-                  {!loadingHuecos && huecosConsultados && huecosFiltrados.length === 0 && (
-                    <p className="text-muted" style={{ fontSize: '14px' }}>No available time slots for that day.</p>
-                  )}
+                {!loadingHuecos && huecosFiltrados.length > 0 && (
+                  <>
+                    <p style={{ fontWeight: 600, fontSize: '13px', marginBottom: '10px', color: 'var(--text-muted)' }}>Available slots</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {huecosFiltrados.map(h => (
+                        <button key={h.hora} type="button" onClick={() => setHora(h.hora)} className={`time-slot ${hora === h.hora ? 'selected' : ''}`}>
+                          {h.hora}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
 
-                  {!loadingHuecos && huecosFiltrados.length > 0 && (
-                    <>
-                      <p className="fw-semibold mb-2" style={{ fontSize: '13px' }}>Available slots</p>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                        {huecosFiltrados.map(h => (
-                          <button
-                            key={h.hora}
-                            type="button"
-                            onClick={() => setHora(h.hora)}
-                            style={{
-                              padding: '8px 16px',
-                              borderRadius: '8px',
-                              border: `2px solid ${hora === h.hora ? '#0f3460' : '#dee2e6'}`,
-                              background: hora === h.hora ? '#0f3460' : 'white',
-                              color: hora === h.hora ? 'white' : '#212529',
-                              fontWeight: hora === h.hora ? 600 : 400,
-                              fontSize: '14px',
-                              cursor: 'pointer',
-                              transition: 'all 0.15s',
-                            }}
-                          >
-                            {h.hora}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </Card.Body>
-              </Card>
-
-              <Button
-                type="submit"
-                size="lg"
-                variant="primary"
-                disabled={loadingSubmit || !barberoId || !servicioBaseId || !fecha || !hora}
-                style={{ width: '100%', padding: '14px' }}
-              >
+              <Button type="submit" size="lg" variant="primary" disabled={loadingSubmit || !barberoId || !servicioBaseId || !fecha || !hora} style={{ width: '100%', padding: '14px' }}>
                 {loadingSubmit ? <><Spinner animation="border" size="sm" className="me-2" />Confirming...</> : 'Confirm appointment'}
               </Button>
             </Form>
@@ -368,51 +264,38 @@ export function NuevoTurno() {
 
           {/* Summary */}
           <Col lg={4}>
-            <div style={{ position: 'sticky', top: '24px' }}>
-              <Card className="border-0 shadow-sm">
-                <Card.Body className="p-4">
-                  <h6 className="text-muted text-uppercase mb-3" style={{ letterSpacing: '0.05em', fontSize: '12px' }}>
-                    Summary
-                  </h6>
-
-                  <div className="d-flex flex-column gap-3">
-                    <div>
-                      <div className="text-muted" style={{ fontSize: '12px' }}>Barber</div>
-                      <div className="fw-semibold" style={{ fontSize: '14px' }}>
-                        {barberoSeleccionado ? `${barberoSeleccionado.nombre} ${barberoSeleccionado.apellido}` : '—'}
-                      </div>
+            <div style={{ position: 'sticky', top: '24px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '20px' }}>
+                Summary
+              </p>
+              <div className="summary-row">
+                <span className="summary-row-label">Barber</span>
+                <span className="summary-row-value">{barberoSeleccionado ? `${barberoSeleccionado.nombre} ${barberoSeleccionado.apellido}` : '—'}</span>
+              </div>
+              <div className="summary-row">
+                <span className="summary-row-label">Service</span>
+                <div style={{ textAlign: 'right' }}>
+                  <span className="summary-row-value">{servicioBase ? servicioBase.nombre : '—'}</span>
+                  {addonIds.length > 0 && (
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                      + {servicios.filter(s => addonIds.includes(s.id)).map(s => s.nombre).join(', ')}
                     </div>
-                    <div>
-                      <div className="text-muted" style={{ fontSize: '12px' }}>Service</div>
-                      <div className="fw-semibold" style={{ fontSize: '14px' }}>
-                        {servicioBase ? servicioBase.nombre : '—'}
-                      </div>
-                      {addonIds.length > 0 && (
-                        <div className="text-muted" style={{ fontSize: '13px' }}>
-                          + {servicios.filter(s => addonIds.includes(s.id)).map(s => s.nombre).join(', ')}
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <div className="text-muted" style={{ fontSize: '12px' }}>Date & time</div>
-                      <div className="fw-semibold" style={{ fontSize: '14px' }}>
-                        {fecha && hora ? `${fecha} at ${hora}` : '—'}
-                      </div>
-                    </div>
-
-                    <hr className="my-1" />
-
-                    <div className="d-flex justify-content-between align-items-center">
-                      <span className="text-muted" style={{ fontSize: '13px' }}>Duration</span>
-                      <Badge bg="secondary" style={{ fontSize: '13px' }}>{duracionTotal ? `${duracionTotal} min` : '—'}</Badge>
-                    </div>
-                    <div className="d-flex justify-content-between align-items-center">
-                      <span className="fw-semibold">Total price</span>
-                      <span className="fw-bold fs-5" style={{ color: '#0f3460' }}>${precioTotal}</span>
-                    </div>
-                  </div>
-                </Card.Body>
-              </Card>
+                  )}
+                </div>
+              </div>
+              <div className="summary-row">
+                <span className="summary-row-label">Date & time</span>
+                <span className="summary-row-value">{fecha && hora ? `${fecha} at ${hora}` : '—'}</span>
+              </div>
+              <hr style={{ borderColor: 'var(--border)', margin: '12px 0' }} />
+              <div className="summary-row">
+                <span className="summary-row-label">Duration</span>
+                <Badge bg="secondary">{duracionTotal ? `${duracionTotal} min` : '—'}</Badge>
+              </div>
+              <div className="summary-row" style={{ marginTop: '8px' }}>
+                <span style={{ fontWeight: 600 }}>Total</span>
+                <span className="summary-total">${precioTotal}</span>
+              </div>
             </div>
           </Col>
         </Row>
