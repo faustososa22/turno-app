@@ -32,6 +32,7 @@ builder.Services.Configure<ResendClientOptions>(o =>
 });
 builder.Services.AddTransient<IResend, ResendClient>();
 builder.Services.AddScoped<TurnoApp.Services.EmailService>();
+builder.Services.AddScoped<TurnoApp.Services.ITurnoService, TurnoApp.Services.TurnoService>();
 
 // Registrar DbContext con PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>

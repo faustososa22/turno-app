@@ -4,10 +4,9 @@ using Anthropic.SDK.Constants;
 using Anthropic.SDK.Messaging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using TurnoApp.Data;
+using TurnoApp.Services;
 
 namespace TurnoApp.Controllers;
 
@@ -16,17 +15,16 @@ namespace TurnoApp.Controllers;
 [Authorize]
 public class ChatController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly ITurnoService _turnoService;
     private readonly IConfiguration _config;
 
-    // Rate limiting: max 10 requests per user per hour
     private static readonly Dictionary<int, List<DateTime>> _requestLog = new();
     private static readonly object _lock = new();
     private const int MaxRequestsPerHour = 15;
 
-    public ChatController(AppDbContext context, IConfiguration config)
+    public ChatController(ITurnoService turnoService, IConfiguration config)
     {
-        _context = context;
+        _turnoService = turnoService;
         _config = config;
     }
 
@@ -46,7 +44,6 @@ public class ChatController : ControllerBase
             if (!_requestLog.ContainsKey(userId))
                 _requestLog[userId] = new List<DateTime>();
 
-            // Remove requests older than 1 hour
             _requestLog[userId].RemoveAll(t => t < oneHourAgo);
 
             if (_requestLog[userId].Count >= MaxRequestsPerHour)
@@ -110,7 +107,6 @@ Be concise and friendly.";
             Tools = tools
         };
 
-        // Tool use loop: Claude calls tools until it has a final text answer
         MessageResponse response;
         do
         {
@@ -122,7 +118,7 @@ Be concise and friendly.";
                 var toolResults = new List<ContentBase>();
                 foreach (var toolCall in response.ToolCalls)
                 {
-                    var result = await ExecuteTool(toolCall.Name, toolCall.Arguments);
+                    var result = await ExecuteTool(toolCall.Name, toolCall.Arguments, userId);
                     toolResults.Add(new ToolResultContent
                     {
                         ToolUseId = toolCall.Id,
@@ -138,33 +134,20 @@ Be concise and friendly.";
         return Ok(new { reply = response.Message.ToString() });
     }
 
-    private async Task<string> ExecuteTool(string toolName, JsonNode? args)
+    private async Task<string> ExecuteTool(string toolName, JsonNode? args, int userId)
     {
         switch (toolName)
         {
             case "get_barberos":
             {
-                var barberos = await _context.Barberos
-                    .Where(b => b.Activo)
-                    .Select(b => new { b.Id, nombre = b.Nombre + " " + b.Apellido })
-                    .ToListAsync();
+                var barberos = await _turnoService.GetBarberosAsync();
                 return JsonSerializer.Serialize(barberos);
             }
 
             case "get_servicios":
             {
                 var barberoId = args!["barbero_id"]!.GetValue<int>();
-                var servicios = await _context.BarberoServicios
-                    .Where(bs => bs.BarberoId == barberoId && bs.Servicio.Activo)
-                    .Select(bs => new
-                    {
-                        bs.Servicio.Id,
-                        bs.Servicio.Nombre,
-                        bs.Servicio.Tipo,
-                        bs.Servicio.DuracionMinutos,
-                        bs.Servicio.Precio
-                    })
-                    .ToListAsync();
+                var servicios = await _turnoService.GetServiciosAsync(barberoId);
                 return JsonSerializer.Serialize(servicios);
             }
 
@@ -173,52 +156,19 @@ Be concise and friendly.";
                 var barberoId = args!["barbero_id"]!.GetValue<int>();
                 var fecha = DateTime.Parse(args["fecha"]!.GetValue<string>());
                 var duracion = args["duracion_minutos"]!.GetValue<int>();
-
-                var timezoneId = _config["Barberia:TimeZone"];
-                var timezone = TimeZoneInfo.FindSystemTimeZoneById(timezoneId!);
-
-                var horario = await _context.HorariosDisponibles
-                    .FirstOrDefaultAsync(h => h.BarberoId == barberoId && h.DiaSemana == fecha.DayOfWeek && h.Activo);
-
-                var actualDayName = fecha.DayOfWeek.ToString();
-
-                if (horario == null)
-                    return JsonSerializer.Serialize(new
-                    {
-                        available = false,
-                        available_slots = Array.Empty<string>(),
-                        actual_date = fecha.ToString("yyyy-MM-dd"),
-                        actual_day_of_week = actualDayName,
-                        message = $"The barber does not work on {actualDayName}s. available_slots is empty. DO NOT book. Tell the client there are no slots on {actualDayName} {fecha:yyyy-MM-dd} and ask them to pick another date."
-                    });
-
-                var turnos = await _context.Turnos
-                    .Where(t => t.BarberoId == barberoId && t.Estado != "cancelado")
-                    .Select(t => new { t.FechaHora, t.FechaHoraFin })
-                    .ToListAsync();
-
-                var huecos = new List<string>();
-                var hora = horario.HoraInicio;
-                while (hora.AddMinutes(duracion) <= horario.HoraFin)
-                {
-                    var slotLocal = new DateTime(fecha.Year, fecha.Month, fecha.Day, hora.Hour, hora.Minute, 0, DateTimeKind.Unspecified);
-                    var slotUtc = TimeZoneInfo.ConvertTimeToUtc(slotLocal, timezone);
-                    var slotFinUtc = slotUtc.AddMinutes(duracion);
-                    var disponible = !turnos.Any(t => t.FechaHora < slotFinUtc && t.FechaHoraFin > slotUtc);
-                    if (disponible) huecos.Add(hora.ToString("HH:mm"));
-                    hora = hora.AddMinutes(15);
-                }
+                var result = await _turnoService.GetHuecosAsync(barberoId, fecha, duracion);
                 return JsonSerializer.Serialize(new
                 {
-                    available_slots = huecos,
-                    actual_date = fecha.ToString("yyyy-MM-dd"),
-                    actual_day_of_week = actualDayName
+                    available = result.Available,
+                    available_slots = result.AvailableSlots,
+                    actual_date = result.ActualDate,
+                    actual_day_of_week = result.ActualDayOfWeek,
+                    message = result.Message
                 });
             }
 
             case "crear_turno":
             {
-                var usuarioId = GetUserId();
                 var barberoId = args!["barbero_id"]!.GetValue<int>();
                 var servicioBaseId = args["servicio_base_id"]!.GetValue<int>();
                 var fechaHoraStr = args["fecha_hora"]!.GetValue<string>();
@@ -227,58 +177,10 @@ Be concise and friendly.";
                 if (args["addon_ids"] is JsonArray addonsArr)
                     addonIds = addonsArr.Select(e => e!.GetValue<int>()).ToList();
 
-                var todosIds = new List<int> { servicioBaseId };
-                todosIds.AddRange(addonIds);
-
-                var servicios = await _context.Servicios
-                    .Where(s => todosIds.Contains(s.Id))
-                    .ToListAsync();
-
-                var tz = TimeZoneInfo.FindSystemTimeZoneById(_config["Barberia:TimeZone"]!);
-                var fechaLocal = DateTime.Parse(fechaHoraStr);
-                var fechaUtc = TimeZoneInfo.ConvertTimeToUtc(fechaLocal, tz);
-                var totalMin = servicios.Sum(s => s.DuracionMinutos);
-                var totalPrecio = servicios.Sum(s => s.Precio);
-                var fechaFinUtc = fechaUtc.AddMinutes(totalMin);
-
-                // Validate: barber has a schedule for this day
-                var horario = await _context.HorariosDisponibles
-                    .FirstOrDefaultAsync(h => h.BarberoId == barberoId && h.DiaSemana == fechaLocal.DayOfWeek && h.Activo);
-
-                if (horario == null)
-                    return JsonSerializer.Serialize(new { success = false, error = "The barber has no schedule on that day. Cannot create the appointment." });
-
-                // Validate: slot fits within the schedule block
-                var slotTime = new TimeOnly(fechaLocal.Hour, fechaLocal.Minute);
-                var slotEnd = slotTime.AddMinutes(totalMin);
-                if (slotTime < horario.HoraInicio || slotEnd > horario.HoraFin)
-                    return JsonSerializer.Serialize(new { success = false, error = "The requested time slot is outside the barber's working hours." });
-
-                // Validate: no conflict with existing appointments
-                var conflict = await _context.Turnos
-                    .AnyAsync(t => t.BarberoId == barberoId && t.Estado != "cancelado"
-                                   && t.FechaHora < fechaFinUtc && t.FechaHoraFin > fechaUtc);
-
-                if (conflict)
-                    return JsonSerializer.Serialize(new { success = false, error = "That time slot is no longer available. Please choose another." });
-
-                var turno = new TurnoApp.Models.Turno
-                {
-                    FechaHora = fechaUtc,
-                    FechaHoraFin = fechaFinUtc,
-                    BarberoId = barberoId,
-                    UsuarioId = usuarioId,
-                    ServicioId = servicioBaseId,
-                    PrecioTotal = totalPrecio
-                };
-                _context.Turnos.Add(turno);
-                await _context.SaveChangesAsync();
-
-                foreach (var sId in todosIds)
-                    _context.TurnoServicios.Add(new TurnoApp.Models.TurnoServicio { TurnoId = turno.Id, ServicioId = sId });
-                await _context.SaveChangesAsync();
-
-                return JsonSerializer.Serialize(new { success = true, turno_id = turno.Id });
+                var result = await _turnoService.CrearTurnoAsync(barberoId, servicioBaseId, addonIds, fechaHoraStr, userId);
+                return result.Success
+                    ? JsonSerializer.Serialize(new { success = true, turno_id = result.TurnoId })
+                    : JsonSerializer.Serialize(new { success = false, error = result.Error });
             }
 
             default:

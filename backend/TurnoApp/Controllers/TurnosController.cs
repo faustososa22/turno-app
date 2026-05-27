@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using TurnoApp.Data;
 using TurnoApp.DTOs;
 using TurnoApp.Models;
+using TurnoApp.Services;
 
 namespace TurnoApp.Controllers;
 
@@ -12,22 +13,22 @@ namespace TurnoApp.Controllers;
 public class TurnosController : ControllerBase
 {
     private readonly AppDbContext context;
-    private readonly IConfiguration _config;
-    private readonly TurnoApp.Services.EmailService _email;
+    private readonly ITurnoService _turnoService;
+    private readonly EmailService _email;
 
-    public TurnosController(AppDbContext context, IConfiguration config, TurnoApp.Services.EmailService email)
+    public TurnosController(AppDbContext context, ITurnoService turnoService, EmailService email)
     {
         this.context = context;
-        this._config = config;
-        this._email = email;
+        _turnoService = turnoService;
+        _email = email;
     }
 
     private int GetUserId()
     {
-        var nameClaim = User.Claims.FirstOrDefault(c => 
-            c.Type.Contains("nameidentifier") || 
+        var nameClaim = User.Claims.FirstOrDefault(c =>
+            c.Type.Contains("nameidentifier") ||
             c.Type.EndsWith("nameidentifier"));
-        
+
         return nameClaim != null ? int.Parse(nameClaim.Value) : 0;
     }
 
@@ -180,76 +181,29 @@ public class TurnosController : ControllerBase
     {
         var usuarioId = GetUserId();
 
-        var barberoExiste = await context.Barberos.AnyAsync(b => b.Id == dto.BarberoId && b.Activo);
-        if (!barberoExiste) return BadRequest("The selected barber does not exist or is not active.");
+        var result = await _turnoService.CrearTurnoAsync(
+            dto.BarberoId, dto.ServicioBaseId, dto.AddonIds, dto.FechaHora, usuarioId);
 
-        var servicioBase = await context.Servicios.FindAsync(dto.ServicioBaseId);
-        if (servicioBase == null) return BadRequest("The selected base service does not exist.");
+        if (!result.Success)
+            return BadRequest(new { message = result.Error });
 
-        var todosLosServiciosIds = new List<int> { dto.ServicioBaseId };
-        todosLosServiciosIds.AddRange(dto.AddonIds);
-
-        var servicios = await context.Servicios
-            .Where(s => todosLosServiciosIds.Contains(s.Id))
-            .ToListAsync();
-
-        if (servicios.Count != todosLosServiciosIds.Count)
-            return BadRequest("Some services do not exist.");
-
-        var duracionTotal = servicios.Sum(s => s.DuracionMinutos);
-        var precioTotal = servicios.Sum(s => s.Precio);
-
-        var timezoneId = _config["Barberia:TimeZone"];
-        var timezone = TimeZoneInfo.FindSystemTimeZoneById(timezoneId!);
-        
-        var fechaRecibida = DateTime.Parse(dto.FechaHora);
-        var fechaHora = TimeZoneInfo.ConvertTimeToUtc(fechaRecibida, timezone);
-        var fechaFinTurno = fechaHora.AddMinutes(duracionTotal);
-
-        var nuevoTurno = new Turno
-        {
-            FechaHora = fechaHora,
-            FechaHoraFin = fechaFinTurno,
-            BarberoId = dto.BarberoId,
-            UsuarioId = usuarioId,
-            ServicioId = dto.ServicioBaseId,
-            PrecioTotal = precioTotal
-        };
-
-        context.Turnos.Add(nuevoTurno);
-        await context.SaveChangesAsync();
-
-        foreach (var servicio in servicios)
-        {
-            var turnoServicio = new TurnoServicio
-            {
-                TurnoId = nuevoTurno.Id,
-                ServicioId = servicio.Id
-            };
-            context.TurnoServicios.Add(turnoServicio);
-        }
-
-        await context.SaveChangesAsync();
-
-        // Send booking confirmation email
         var cliente = await context.Usuarios.FindAsync(usuarioId);
         var barbero = await context.Barberos.FindAsync(dto.BarberoId);
         if (cliente != null && barbero != null)
         {
-            var serviceNames = string.Join(", ", servicios.Select(s => s.Nombre));
             await _email.SendBookingConfirmationAsync(
                 cliente.Email, cliente.Nombre, $"{barbero.Nombre} {barbero.Apellido}",
-                serviceNames, nuevoTurno.FechaHora, precioTotal);
+                string.Join(", ", result.Servicios!), result.FechaHora!.Value, result.PrecioTotal!.Value);
         }
 
-        return CreatedAtAction(nameof(GetTurnos), new { id = nuevoTurno.Id }, new
+        return CreatedAtAction(nameof(GetTurnos), new { id = result.TurnoId }, new
         {
-            nuevoTurno.Id,
-            nuevoTurno.FechaHora,
-            nuevoTurno.FechaHoraFin,
-            DuracionMinutos = duracionTotal,
-            PrecioTotal = precioTotal,
-            Servicios = servicios.Select(s => s.Nombre).ToList()
+            result.TurnoId,
+            result.FechaHora,
+            result.FechaHoraFin,
+            result.DuracionMinutos,
+            result.PrecioTotal,
+            result.Servicios
         });
     }
 
@@ -259,36 +213,28 @@ public class TurnosController : ControllerBase
     {
         var turno = await context.Turnos.FindAsync(id);
         if (turno == null) return NotFound();
-        
+
         var esAdmin = User.IsInRole("admin");
-        
-        // Admin puede cancelar cualquier turno
+
         if (!esAdmin)
         {
-            // Barbero puede cancelar turnos asignados a él
             if (User.IsInRole("barbero"))
             {
                 var barbero = await context.Barberos
                     .FirstOrDefaultAsync(b => b.UsuarioId == GetUserId());
                 if (barbero == null || turno.BarberoId != barbero.Id)
-                {
                     return Forbid();
-                }
             }
-            // Cliente solo sus propios turnos
             else if (User.IsInRole("cliente"))
             {
                 if (turno.UsuarioId != GetUserId())
-                {
                     return Forbid();
-                }
             }
         }
 
         turno.Estado = "cancelado";
         await context.SaveChangesAsync();
 
-        // Send cancellation email
         var emailCliente = await context.Usuarios.FindAsync(turno.UsuarioId);
         var emailBarbero = await context.Barberos.FindAsync(turno.BarberoId);
         if (emailCliente != null && emailBarbero != null)
@@ -326,59 +272,58 @@ public class TurnosController : ControllerBase
     }
 
     [HttpPatch("{id}/confirmar")]
-  [Authorize(Roles = "admin,barbero")]
-  public async Task<IActionResult> ConfirmarTurno(int id)
-  {
-      var turno = await context.Turnos.FindAsync(id);
-      if (turno == null) return NotFound();
+    [Authorize(Roles = "admin,barbero")]
+    public async Task<IActionResult> ConfirmarTurno(int id)
+    {
+        var turno = await context.Turnos.FindAsync(id);
+        if (turno == null) return NotFound();
 
-      if (turno.Estado == "cancelado")
-          return BadRequest("Cannot confirm a cancelled appointment.");
+        if (turno.Estado == "cancelado")
+            return BadRequest("Cannot confirm a cancelled appointment.");
 
-      if (User.IsInRole("barbero"))
-      {
-          var barbero = await context.Barberos
-              .FirstOrDefaultAsync(b => b.UsuarioId == GetUserId());
-          if (barbero == null || turno.BarberoId != barbero.Id) return Forbid();
-      }
+        if (User.IsInRole("barbero"))
+        {
+            var barbero = await context.Barberos
+                .FirstOrDefaultAsync(b => b.UsuarioId == GetUserId());
+            if (barbero == null || turno.BarberoId != barbero.Id) return Forbid();
+        }
 
-      turno.Estado = "confirmado";
-      await context.SaveChangesAsync();
+        turno.Estado = "confirmado";
+        await context.SaveChangesAsync();
 
-      // Send confirmation email
-      var emailCliente = await context.Usuarios.FindAsync(turno.UsuarioId);
-      var emailBarbero = await context.Barberos.FindAsync(turno.BarberoId);
-      var emailServicios = await context.TurnoServicios
-          .Where(ts => ts.TurnoId == turno.Id)
-          .Select(ts => ts.Servicio.Nombre)
-          .ToListAsync();
-      if (emailCliente != null && emailBarbero != null)
-          await _email.SendAppointmentConfirmedAsync(
-              emailCliente.Email, emailCliente.Nombre, $"{emailBarbero.Nombre} {emailBarbero.Apellido}",
-              string.Join(", ", emailServicios), turno.FechaHora);
+        var emailCliente = await context.Usuarios.FindAsync(turno.UsuarioId);
+        var emailBarbero = await context.Barberos.FindAsync(turno.BarberoId);
+        var emailServicios = await context.TurnoServicios
+            .Where(ts => ts.TurnoId == turno.Id)
+            .Select(ts => ts.Servicio.Nombre)
+            .ToListAsync();
+        if (emailCliente != null && emailBarbero != null)
+            await _email.SendAppointmentConfirmedAsync(
+                emailCliente.Email, emailCliente.Nombre, $"{emailBarbero.Nombre} {emailBarbero.Apellido}",
+                string.Join(", ", emailServicios), turno.FechaHora);
 
-      return Ok(new { turno.Id, turno.Estado });
-  }
+        return Ok(new { turno.Id, turno.Estado });
+    }
 
-  [HttpPatch("{id}/pago")]
-  [Authorize(Roles = "admin,barbero")]
-  public async Task<IActionResult> MarcarPagado(int id)
-  {
-      var turno = await context.Turnos.FindAsync(id);
-      if (turno == null) return NotFound();
+    [HttpPatch("{id}/pago")]
+    [Authorize(Roles = "admin,barbero")]
+    public async Task<IActionResult> MarcarPagado(int id)
+    {
+        var turno = await context.Turnos.FindAsync(id);
+        if (turno == null) return NotFound();
 
-      if (turno.Estado == "cancelado")
-          return BadRequest("Cannot mark a cancelled appointment as paid.");
+        if (turno.Estado == "cancelado")
+            return BadRequest("Cannot mark a cancelled appointment as paid.");
 
-      if (User.IsInRole("barbero"))
-      {
-          var barbero = await context.Barberos
-              .FirstOrDefaultAsync(b => b.UsuarioId == GetUserId());
-          if (barbero == null || turno.BarberoId != barbero.Id) return Forbid();
-      }
+        if (User.IsInRole("barbero"))
+        {
+            var barbero = await context.Barberos
+                .FirstOrDefaultAsync(b => b.UsuarioId == GetUserId());
+            if (barbero == null || turno.BarberoId != barbero.Id) return Forbid();
+        }
 
-      turno.EstadoPago = "pagado";
-      await context.SaveChangesAsync();
-      return Ok(new { turno.Id, turno.EstadoPago });
-  }
+        turno.EstadoPago = "pagado";
+        await context.SaveChangesAsync();
+        return Ok(new { turno.Id, turno.EstadoPago });
+    }
 }
