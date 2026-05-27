@@ -58,20 +58,21 @@ export function ChatBot() {
           width: '56px',
           height: '56px',
           borderRadius: '50%',
-          background: '#0d6efd',
-          color: 'white',
-          border: 'none',
-          fontSize: '24px',
+          background: open ? 'var(--bg-elevated)' : 'var(--gold)',
+          color: open ? 'var(--text)' : '#111111',
+          border: open ? '1px solid var(--border)' : 'none',
+          fontSize: '22px',
           cursor: 'pointer',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
           zIndex: 1000,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          transition: 'background 0.2s',
         }}
         title="Book via chat"
       >
-        {open ? '✕' : '💬'}
+        {open ? '✕' : '✂'}
       </button>
 
       {/* Chat panel */}
@@ -82,9 +83,10 @@ export function ChatBot() {
           right: '24px',
           width: '340px',
           height: '480px',
-          background: 'white',
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border)',
           borderRadius: '12px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
           display: 'flex',
           flexDirection: 'column',
           zIndex: 999,
@@ -92,13 +94,20 @@ export function ChatBot() {
         }}>
           {/* Header */}
           <div style={{
-            background: '#0d6efd',
-            color: 'white',
-            padding: '12px 16px',
-            fontWeight: 600,
-            fontSize: '15px',
+            background: 'var(--bg-elevated)',
+            borderBottom: '1px solid var(--border)',
+            padding: '14px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
           }}>
-            Book an appointment
+            <span style={{ color: 'var(--gold)', fontSize: '16px' }}>✂</span>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '14px', fontFamily: 'Playfair Display, serif', color: 'var(--text)' }}>
+                BarberShop
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Book via chat</div>
+            </div>
           </div>
 
           {/* Messages */}
@@ -111,19 +120,21 @@ export function ChatBot() {
             gap: '8px',
           }}>
             {messages.length === 0 && (
-              <p style={{ color: '#888', fontSize: '14px', textAlign: 'center', marginTop: '40px' }}>
-                Hi! Ask me to book an appointment for you.
+              <p style={{ color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center', marginTop: '40px', lineHeight: 1.5 }}>
+                Hi! Tell me what you need and I'll book an appointment for you.
               </p>
             )}
             {messages.map((m, i) => (
               <div key={i} style={{
                 alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
-                maxWidth: '80%',
-                background: m.role === 'user' ? '#0d6efd' : '#f0f0f0',
-                color: m.role === 'user' ? 'white' : '#333',
+                maxWidth: '82%',
+                background: m.role === 'user' ? 'var(--gold)' : 'var(--bg-elevated)',
+                color: m.role === 'user' ? '#111111' : 'var(--text)',
+                border: m.role === 'user' ? 'none' : '1px solid var(--border)',
                 padding: '8px 12px',
                 borderRadius: m.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-                fontSize: '14px',
+                fontSize: '13px',
+                lineHeight: 1.5,
                 whiteSpace: 'pre-wrap',
               }}>
                 {m.content}
@@ -132,11 +143,12 @@ export function ChatBot() {
             {loading && (
               <div style={{
                 alignSelf: 'flex-start',
-                background: '#f0f0f0',
+                background: 'var(--bg-elevated)',
+                border: '1px solid var(--border)',
                 padding: '8px 12px',
                 borderRadius: '12px 12px 12px 2px',
-                fontSize: '14px',
-                color: '#888',
+                fontSize: '13px',
+                color: 'var(--text-muted)',
               }}>
                 Typing...
               </div>
@@ -147,9 +159,10 @@ export function ChatBot() {
           {/* Input */}
           <div style={{
             padding: '10px',
-            borderTop: '1px solid #eee',
+            borderTop: '1px solid var(--border)',
             display: 'flex',
             gap: '8px',
+            background: 'var(--bg-elevated)',
           }}>
             <input
               type="text"
@@ -162,8 +175,10 @@ export function ChatBot() {
                 flex: 1,
                 padding: '8px 12px',
                 borderRadius: '20px',
-                border: '1px solid #ddd',
-                fontSize: '14px',
+                border: '1px solid var(--border)',
+                background: 'var(--bg-surface)',
+                color: 'var(--text)',
+                fontSize: '13px',
                 outline: 'none',
               }}
             />
@@ -171,18 +186,19 @@ export function ChatBot() {
               onClick={() => void sendMessage()}
               disabled={loading || !input.trim()}
               style={{
-                background: '#0d6efd',
-                color: 'white',
+                background: 'var(--gold)',
+                color: '#111111',
                 border: 'none',
                 borderRadius: '50%',
                 width: '36px',
                 height: '36px',
                 cursor: 'pointer',
-                fontSize: '16px',
+                fontSize: '15px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                opacity: loading || !input.trim() ? 0.5 : 1,
+                opacity: loading || !input.trim() ? 0.4 : 1,
+                transition: 'opacity 0.2s',
               }}
             >
               ➤
