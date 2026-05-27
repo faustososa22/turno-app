@@ -1,8 +1,8 @@
-# BarberShop — Appointment Booking App
+# Turno App — Barbershop Appointment Booking
 
-A full-stack web application for managing barbershop appointments. Clients can book online via a traditional form or through an **AI-powered chatbot**. Barbers manage their schedule, and admins have full control over the business.
+A full-stack barbershop appointment system. Clients can book via a traditional form or an **AI-powered chatbot** that guides them through the entire process in natural language. Barbers manage their schedule, and admins have full control over the business.
 
-**Live demo:** https://turno-app-navy.vercel.app/
+**Live demo:** https://turno-app-navy.vercel.app
 
 ## Tech Stack
 
@@ -15,9 +15,10 @@ A full-stack web application for managing barbershop appointments. Clients can b
 **Backend**
 - .NET 10 / ASP.NET Core Web API
 - Entity Framework Core + PostgreSQL
-- JWT authentication with role-based authorization
+- JWT authentication with role-based authorization (Client / Barber / Admin)
 - BCrypt password hashing
 - Anthropic Claude API (AI chatbot with tool use)
+- Scalar (API documentation)
 
 **Infrastructure**
 - Database: Supabase (PostgreSQL)
@@ -29,13 +30,13 @@ A full-stack web application for managing barbershop appointments. Clients can b
 
 ### Clients
 - Register and log in
-- Book appointments: choose barber, base service + optional add-ons, date and time slot
-- **Book via AI chatbot** — a floating chat widget guides the user through the entire booking process in natural language, querying real data from the database
-- View and cancel their upcoming appointments
+- Book appointments: choose barber, service + optional add-ons, date and time slot
+- **Book via AI chatbot** — a floating chat widget guides the user through the entire booking process using natural language, querying live data from the database
+- View and cancel upcoming appointments
 
 ### Barbers
-- View their assigned appointments filtered by date
-- Confirm and mark appointments as paid
+- View assigned appointments filtered by date
+- Confirm appointments and mark as paid
 - Cancel appointments
 
 ### Admin
@@ -48,11 +49,11 @@ A full-stack web application for managing barbershop appointments. Clients can b
 
 The chatbot uses **Claude's tool use** (function calling) to interact with the live database. Claude decides when to call each tool based on the conversation:
 
-| Tool | What it does |
+| Tool | Description |
 |------|-------------|
 | `get_barberos` | Fetches available barbers |
 | `get_servicios` | Fetches services for a selected barber |
-| `get_huecos` | Fetches available time slots for a date |
+| `get_huecos` | Fetches available time slots for a given date |
 | `crear_turno` | Creates the appointment in the database |
 
 The backend executes each tool call against the database and returns the result to Claude, which then responds naturally to the user. Rate limited to 15 requests per user per hour.
@@ -71,7 +72,7 @@ The backend executes each tool call against the database and returns the result 
 - Node.js 18+
 - .NET 10 SDK
 - Docker (for PostgreSQL)
-- Anthropic API key (for the chatbot)
+- Anthropic API key
 
 ### Backend
 ```bash
@@ -82,10 +83,14 @@ dotnet run                  # API runs at http://localhost:5021
 
 Add your Anthropic API key to `appsettings.json`:
 ```json
-"Anthropic": {
-  "ApiKey": "your-key-here"
+{
+  "Anthropic": {
+    "ApiKey": "your-key-here"
+  }
 }
 ```
+
+API docs available at `http://localhost:5021/scalar/v1` in development.
 
 ### Frontend
 ```bash
@@ -94,4 +99,9 @@ npm install
 npm run dev                 # runs at http://localhost:5173
 ```
 
-API docs available at `http://localhost:5021/scalar/v1` in development.
+## Author
+
+**Fausto Martin Sosa** — Junior .NET Developer based in Cork, Ireland
+
+- GitHub: [faustososa22](https://github.com/faustososa22)
+- LinkedIn: [fausto-sosa](https://linkedin.com/in/fausto-sosa)
